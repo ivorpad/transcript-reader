@@ -203,11 +203,11 @@ export class PrismTimeline extends LitElement {
     }
 
     .timeline {
-      background: white;
-      border: 1px solid var(--gray-200);
+      background: var(--surface-raised);
+      border: 1px solid var(--border-subtle);
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      box-shadow: var(--shadow-low);
     }
 
     .timeline-header {
@@ -216,7 +216,7 @@ export class PrismTimeline extends LitElement {
       align-items: center;
       gap: 12px;
       padding: 10px 14px;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .title-block {
@@ -229,20 +229,20 @@ export class PrismTimeline extends LitElement {
       align-items: center;
       gap: 6px;
       font-size: 10.5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 500;
     }
 
     .meta-sep {
-      color: var(--gray-300);
+      color: var(--text-4);
     }
 
     .meta-file {
       text-transform: none;
       letter-spacing: 0;
-      color: var(--gray-500);
+      color: var(--text-3);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -250,7 +250,7 @@ export class PrismTimeline extends LitElement {
 
     .title {
       font-size: 14px;
-      color: var(--gray-900);
+      color: var(--text-1);
       font-weight: 500;
       margin-top: 2px;
       overflow: hidden;
@@ -276,7 +276,7 @@ export class PrismTimeline extends LitElement {
       display: inline-grid;
       place-items: center;
       border-radius: 6px;
-      color: var(--gray-600);
+      color: var(--text-2);
       cursor: pointer;
       border: 1px solid transparent;
       transition: background 120ms ease, color 120ms ease;
@@ -284,12 +284,12 @@ export class PrismTimeline extends LitElement {
 
     .icon-btn:hover,
     .icon-btn.is-active {
-      background: var(--gray-100);
-      color: var(--gray-900);
+      background: var(--surface-sunken);
+      color: var(--text-1);
     }
 
     .icon-btn:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
 
@@ -300,12 +300,10 @@ export class PrismTimeline extends LitElement {
       z-index: 10;
       width: 200px;
       padding: 4px;
-      background: white;
-      border: 1px solid var(--gray-200);
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.04),
-        0 8px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow-menu);
     }
 
     .share-item {
@@ -317,19 +315,19 @@ export class PrismTimeline extends LitElement {
       border-radius: 5px;
       cursor: pointer;
       font-size: 12.5px;
-      color: var(--gray-800);
+      color: var(--text-2);
     }
 
     .share-item:hover {
-      background: var(--gray-100);
+      background: var(--surface-sunken);
     }
 
     .action-status {
       padding: 6px 14px;
       font-size: 11.5px;
-      color: var(--gray-600);
-      background: var(--gray-50);
-      border-bottom: 1px solid var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-raised);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .stack {
@@ -342,7 +340,7 @@ export class PrismTimeline extends LitElement {
     .empty,
     .empty-stack {
       padding: 12px;
-      color: var(--gray-500);
+      color: var(--text-3);
       font-size: 12px;
     }
   `;

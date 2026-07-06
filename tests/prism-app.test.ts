@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 
 import '../src/prism-app';
 import type { PrismApp } from '../src/prism-app';
@@ -171,6 +171,47 @@ const getSwitchByLabel = (panel: HTMLElement, label: string) => {
   return row?.querySelector('button[role="switch"]') as HTMLButtonElement;
 };
 
+const installTestLocalStorage = () => {
+  const store = new Map<string, string>();
+  const storage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return [...store.keys()][index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    }
+  } satisfies Storage;
+
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: storage
+  });
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: storage
+  });
+};
+
+beforeEach(() => {
+  installTestLocalStorage();
+  localStorage.removeItem('prism-theme-mode');
+  localStorage.removeItem('prism-theme-variant');
+  document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute('data-dark-variant');
+});
+
 const clickFocusChip = async (
   panel: HTMLElement,
   chip: HTMLButtonElement,
@@ -202,10 +243,8 @@ describe('prism-app', () => {
     const rootText = normalizeText(app.shadowRoot?.textContent);
 
     expect(rootText).toContain('Prism reads Claude Code JSONL sessions');
-    expect(rootText).toContain('Timeline');
-    expect(rootText).toContain('Focus Mode');
-    expect(rootText).toContain('Metadata');
-    expect(rootText).toContain('Export');
+    expect(rootText).toContain('tracing the run');
+    expect(rootText).toContain('Your files stay in the browser');
     expect(rootText).toContain('mock-session.jsonl');
     expect(getTimelines(app)).toHaveLength(1);
     expect(getTimelineText(getTimeline(app))).toContain('Review a Claude Code run');
@@ -443,6 +482,52 @@ describe('prism-app', () => {
     expect(app.shadowRoot?.querySelector('.actions-menu')).toBeNull();
     expect(panel.shadowRoot?.textContent ?? '').toContain('Message labels');
     expect(panel.shadowRoot?.textContent ?? '').toContain('Preferences');
+  });
+
+  test('persists theme mode and dark variant from preferences', async () => {
+    const app = await mountApp();
+    const panel = await openPreferences(app);
+
+    expect(panel.shadowRoot?.textContent ?? '').toContain('Appearance');
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(document.documentElement.dataset.darkVariant).toBe('slate');
+
+    const darkMode = findButtonByText(panel.shadowRoot, 'Dark');
+    darkMode.click();
+    await app.updateComplete;
+    await panel.updateComplete;
+
+    expect(localStorage.getItem('prism-theme-mode')).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(panel.shadowRoot?.textContent ?? '').toContain(
+      'Always uses dark'
+    );
+
+    const warmVariant = panel.shadowRoot?.querySelector(
+      'button[data-variant="warm"]'
+    ) as HTMLButtonElement;
+    warmVariant.click();
+    await app.updateComplete;
+    await panel.updateComplete;
+
+    expect(localStorage.getItem('prism-theme-variant')).toBe('warm');
+    expect(document.documentElement.dataset.darkVariant).toBe('warm');
+    expect(panel.shadowRoot?.textContent ?? '').toContain('Graphite Warm');
+
+    const lightMode = findButtonByText(panel.shadowRoot, 'Light');
+    lightMode.click();
+    await app.updateComplete;
+    await panel.updateComplete;
+
+    const slateVariant = panel.shadowRoot?.querySelector(
+      'button[data-variant="slate"]'
+    ) as HTMLButtonElement;
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(slateVariant.disabled).toBe(true);
+    expect(warmVariant.disabled).toBe(true);
+    expect(panel.shadowRoot?.textContent ?? '').toContain(
+      'Always uses the light theme. Dark variant is ignored.'
+    );
   });
 
   test('keeps the preference popover open on outside click and closes on Escape', async () => {

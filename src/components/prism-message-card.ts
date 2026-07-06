@@ -196,20 +196,20 @@ export class PrismMessageCard extends LitElement {
       column-gap: 10px;
       padding: 10px 12px;
       border-radius: 8px;
-      border: 1px solid var(--gray-200);
-      background: white;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-base);
       cursor: pointer;
       min-width: 0;
       transition: background 120ms ease, border-color 120ms ease;
     }
 
     .card:hover {
-      border-color: var(--gray-300);
+      border-color: var(--border-strong);
     }
 
     .card.selected {
-      background: color-mix(in srgb, var(--blue-50) 50%, white);
-      border-color: color-mix(in srgb, var(--blue-700) 40%, white);
+      background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface-base));
+      border-color: color-mix(in srgb, var(--accent) 40%, var(--surface-base));
     }
 
     /* ---- Role rail (left): icon + accent line ---- */
@@ -218,21 +218,31 @@ export class PrismMessageCard extends LitElement {
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      color: var(--gray-500);
+      color: var(--text-3);
     }
 
     .rail-user {
-      color: var(--green-700);
+      color: var(--role-user);
     }
 
     .rail-assistant,
     .rail-tool {
-      color: var(--purple-700);
+      color: var(--role-asst);
     }
 
     .rail-system,
     .rail-meta {
-      color: var(--gray-500);
+      color: var(--text-3);
+    }
+
+    :host([data-channel='tool_result']) .rail-tool {
+      color: var(--role-tool-res);
+    }
+
+    /* tool_call arrives as role 'assistant' (demo session) or 'tool' (parser) */
+    :host([data-channel='tool_call']) .rail-assistant,
+    :host([data-channel='tool_call']) .rail-tool {
+      color: var(--role-tool-call);
     }
 
     .glyph {
@@ -278,7 +288,7 @@ export class PrismMessageCard extends LitElement {
     }
 
     time {
-      color: var(--gray-500);
+      color: var(--text-3);
       font-size: 11px;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
@@ -293,8 +303,8 @@ export class PrismMessageCard extends LitElement {
       line-height: 1.5;
       font-weight: 400;
       white-space: nowrap;
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
       font-variant-numeric: tabular-nums;
     }
 
@@ -303,31 +313,46 @@ export class PrismMessageCard extends LitElement {
     }
 
     .chip.role-user {
-      color: var(--green-700);
-      background: hsl(122, 43%, 96%);
+      color: var(--role-user);
+      background: var(--role-user-bg);
     }
 
     .chip.role-assistant,
     .chip.role-tool {
-      color: var(--purple-700);
-      background: hsl(282, 68%, 97%);
+      color: var(--role-asst);
+      background: var(--role-asst-bg);
+    }
+
+    :host([data-channel='tool_result']) .chip.role-tool {
+      color: var(--role-tool-res);
+      background: var(--role-tool-res-bg);
+    }
+
+    :host([data-channel='tool_call']) .chip.channel {
+      color: var(--role-tool-call);
+      background: var(--role-tool-call-bg);
+    }
+
+    :host([data-channel='tool_result']) .chip.channel {
+      color: var(--role-tool-res);
+      background: var(--role-tool-res-bg);
     }
 
     .chip.role-system,
     .chip.role-meta {
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
     }
 
     .chip.channel,
     .chip.name {
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
     }
 
     .chip.sidechain {
-      color: var(--blue-700);
-      background: var(--blue-50);
+      color: var(--accent);
+      background: var(--accent-soft);
     }
 
     /* ---- Fold button (hover-revealed) ---- */
@@ -339,7 +364,7 @@ export class PrismMessageCard extends LitElement {
       display: inline-grid;
       place-items: center;
       border-radius: 4px;
-      color: var(--gray-500);
+      color: var(--text-3);
       cursor: pointer;
       opacity: 0;
       transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
@@ -351,12 +376,12 @@ export class PrismMessageCard extends LitElement {
     }
 
     .fold-button:hover {
-      background: var(--gray-100);
-      color: var(--gray-900);
+      background: var(--surface-sunken);
+      color: var(--text-1);
     }
 
     .fold-button:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
 
@@ -366,13 +391,13 @@ export class PrismMessageCard extends LitElement {
       padding: 8px 10px;
       max-height: var(--prism-message-max-height, 100vh);
       overflow: auto;
-      background: var(--gray-50);
-      border: 1px solid var(--gray-100);
+      background: var(--surface-sunken);
+      border: 1px solid var(--border-subtle);
       border-radius: 5px;
       font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
       font-size: 11.5px;
       line-height: 1.5;
-      color: var(--gray-800);
+      color: var(--text-2);
       white-space: pre-wrap;
       word-break: break-word;
     }
@@ -381,7 +406,7 @@ export class PrismMessageCard extends LitElement {
       display: block;
       font-size: 13px;
       line-height: 1.55;
-      color: var(--gray-800);
+      color: var(--text-2);
     }
   `;
 }

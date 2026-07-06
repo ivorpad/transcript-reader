@@ -2,6 +2,7 @@ import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import type { PrismChannel, PrismRole } from '../types/prism';
+import type { DarkVariant, ThemeMode } from '../utils/theme';
 import { renderIcon } from '../utils/icons';
 
 export type PrismMessageHeightMode = 'automatic' | 'no-limit' | 'custom';
@@ -39,7 +40,7 @@ export const DEFAULT_GRID_COLUMN_WIDTH = 373;
 const POSITION_STORAGE_KEY = 'prism.preferencePanel.position';
 const EDGE_SNAP_THRESHOLD = 24;
 const EDGE_MARGIN = 16;
-const PANEL_WIDTH = 320;
+const PANEL_WIDTH = 520;
 
 export const clampCustomMessageHeight = (value: number): number =>
   Math.max(
@@ -167,6 +168,12 @@ export class PrismPreferencePanel extends LitElement {
   @property({ attribute: false })
   viewSettings: PrismViewSettings = createDefaultViewSettings();
 
+  @property({ type: String })
+  themeMode: ThemeMode = 'system';
+
+  @property({ type: String })
+  darkVariant: DarkVariant = 'slate';
+
   render() {
     return html`
       <div
@@ -193,6 +200,8 @@ export class PrismPreferencePanel extends LitElement {
         </div>
 
         <div class="content">
+          ${this.#renderAppearanceSection()}
+
           <div class="block">
             <div class="block-label">Max message height</div>
             ${this.#renderSegmented(
@@ -330,16 +339,18 @@ export class PrismPreferencePanel extends LitElement {
   #renderSegmented(
     value: string,
     options: Array<{ value: string; label: string }>,
-    onChange: (value: string) => void
+    onChange: (value: string) => void,
+    className = ''
   ) {
     return html`
-      <div class="segmented">
+      <div class=${`segmented ${className}`}>
         ${options.map(option => {
           const active = option.value === value;
           return html`
             <button
               class="segment ${active ? 'active' : ''}"
               type="button"
+              aria-pressed=${active}
               @click=${() => onChange(option.value)}
             >
               ${option.label}
@@ -347,6 +358,115 @@ export class PrismPreferencePanel extends LitElement {
           `;
         })}
       </div>
+    `;
+  }
+
+  #renderAppearanceSection() {
+    const variantDisabled = this.themeMode === 'light';
+
+    return html`
+      <div class="block appearance-block">
+        <div class="appearance-row">
+          <div>
+            <div class="appearance-title">Appearance</div>
+            <div class="appearance-copy">Choose when the dark theme is shown.</div>
+          </div>
+          ${this.#renderSegmented(
+            this.themeMode,
+            [
+              { value: 'light', label: 'Light' },
+              { value: 'dark', label: 'Dark' },
+              { value: 'system', label: 'System' }
+            ],
+            value => this.#emitThemeMode(value as ThemeMode),
+            'mode-segmented'
+          )}
+        </div>
+
+        <div class="variant-label-row">
+          <span>Dark variant</span>
+          ${variantDisabled
+            ? html`<span class="variant-disabled-note"
+                >not used in Light mode</span
+              >`
+            : null}
+        </div>
+
+        <div class="variant-grid">
+          ${this.#renderThemeVariantCard({
+            variant: 'slate',
+            label: 'Slate',
+            subcopy: 'Cool, neutral dark.',
+            selected: !variantDisabled && this.darkVariant === 'slate',
+            disabled: variantDisabled,
+            swatches: [
+              'var(--theme-slate-base)',
+              'var(--theme-slate-raised)',
+              'var(--theme-slate-text)',
+              'var(--theme-slate-accent)'
+            ]
+          })}
+          ${this.#renderThemeVariantCard({
+            variant: 'warm',
+            label: 'Graphite Warm',
+            subcopy: 'Warm, low-contrast dark.',
+            selected: !variantDisabled && this.darkVariant === 'warm',
+            disabled: variantDisabled,
+            swatches: [
+              'var(--theme-warm-base)',
+              'var(--theme-warm-raised)',
+              'var(--theme-warm-text)',
+              'var(--theme-warm-accent)'
+            ]
+          })}
+        </div>
+
+        <div class="theme-helper">${this.#getThemeHelperText()}</div>
+      </div>
+    `;
+  }
+
+  #renderThemeVariantCard(options: {
+    variant: DarkVariant;
+    label: string;
+    subcopy: string;
+    selected: boolean;
+    disabled: boolean;
+    swatches: [string, string, string, string];
+  }) {
+    const [base, raised, text, accent] = options.swatches;
+
+    return html`
+      <button
+        class="variant-card ${options.selected ? 'selected' : ''}"
+        type="button"
+        data-variant=${options.variant}
+        ?disabled=${options.disabled}
+        aria-pressed=${options.selected}
+        @click=${() => this.#emitDarkVariant(options.variant)}
+      >
+        <span
+          class="variant-preview"
+          style=${`--preview-base: ${base}; --preview-raised: ${raised}; --preview-text: ${text}; --preview-accent: ${accent};`}
+          aria-hidden="true"
+        >
+          <span class="preview-base"></span>
+          <span class="preview-raised">
+            <span class="preview-line strong"></span>
+            <span class="preview-line medium"></span>
+            <span class="preview-line accent"></span>
+          </span>
+        </span>
+        <span class="variant-meta">
+          <span class="variant-copy">
+            <span class="variant-name">${options.label}</span>
+            <span class="variant-subcopy">${options.subcopy}</span>
+          </span>
+          <span class="variant-radio" aria-hidden="true">
+            ${options.selected ? html`<span></span>` : null}
+          </span>
+        </span>
+      </button>
     `;
   }
 
@@ -481,6 +601,43 @@ export class PrismPreferencePanel extends LitElement {
     this.isFocusModeOpen = !this.isFocusModeOpen;
   };
 
+  #emitThemeMode(mode: ThemeMode): void {
+    this.themeMode = mode;
+    this.dispatchEvent(
+      new CustomEvent<ThemeMode>('prism-theme-mode-change', {
+        detail: mode,
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  #emitDarkVariant(variant: DarkVariant): void {
+    this.darkVariant = variant;
+    this.dispatchEvent(
+      new CustomEvent<DarkVariant>('prism-theme-variant-change', {
+        detail: variant,
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  #getThemeHelperText(): string {
+    const variantLabel =
+      this.darkVariant === 'slate' ? 'Slate' : 'Graphite Warm';
+
+    if (this.themeMode === 'light') {
+      return 'Always uses the light theme. Dark variant is ignored.';
+    }
+
+    if (this.themeMode === 'dark') {
+      return `Always uses dark — currently ${variantLabel}.`;
+    }
+
+    return `Follows your OS. When the OS is in dark mode, ${variantLabel} is used.`;
+  }
+
   #getFocusStateLabel(): string {
     if (this.settings.strictFocus) {
       return 'strict';
@@ -533,7 +690,7 @@ export class PrismPreferencePanel extends LitElement {
         window.innerWidth - (this.position.x + PANEL_WIDTH);
       if (distFromRight >= 0 && distFromRight < EDGE_SNAP_THRESHOLD) {
         this.position = {
-          x: window.innerWidth - PANEL_WIDTH - EDGE_MARGIN,
+          x: Math.max(EDGE_MARGIN, window.innerWidth - PANEL_WIDTH - EDGE_MARGIN),
           y: this.position.y
         };
       }
@@ -600,16 +757,15 @@ export class PrismPreferencePanel extends LitElement {
       pointer-events: auto;
       position: absolute;
       width: ${PANEL_WIDTH}px;
+      max-width: calc(100vw - ${EDGE_MARGIN * 2}px);
       max-height: calc(100vh - 80px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: white;
-      border: 1px solid var(--gray-200);
-      border-radius: 10px;
-      box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.04),
-        0 16px 40px rgba(0, 0, 0, 0.1);
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      box-shadow: var(--shadow-menu);
       font-size: 12.5px;
     }
 
@@ -624,8 +780,8 @@ export class PrismPreferencePanel extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: 10px 12px;
-      border-bottom: 1px solid var(--gray-100);
-      background: var(--gray-50);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--surface-raised);
       cursor: grab;
       user-select: none;
     }
@@ -642,13 +798,13 @@ export class PrismPreferencePanel extends LitElement {
 
     .grip {
       display: inline-flex;
-      color: var(--gray-400);
+      color: var(--text-4);
     }
 
     .title {
       font-weight: 600;
       font-size: 13px;
-      color: var(--gray-900);
+      color: var(--text-1);
     }
 
     .close-button {
@@ -658,17 +814,17 @@ export class PrismPreferencePanel extends LitElement {
       display: grid;
       place-items: center;
       border-radius: 5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       cursor: pointer;
     }
 
     .close-button:hover {
-      background: var(--gray-200);
-      color: var(--gray-900);
+      background: var(--surface-sunken);
+      color: var(--text-1);
     }
 
     .close-button:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
 
@@ -683,7 +839,7 @@ export class PrismPreferencePanel extends LitElement {
       flex-direction: column;
       gap: 8px;
       padding: 10px 12px;
-      border-top: 1px solid var(--gray-100);
+      border-top: 1px solid var(--border-subtle);
     }
 
     .block:first-child {
@@ -692,10 +848,194 @@ export class PrismPreferencePanel extends LitElement {
 
     .block-label {
       font-size: 10.5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 500;
+    }
+
+    .appearance-block {
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .appearance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .appearance-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+
+    .appearance-copy {
+      margin-top: 2px;
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: var(--text-3);
+    }
+
+    .variant-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--text-3);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .variant-disabled-note {
+      color: var(--text-4);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+      white-space: nowrap;
+    }
+
+    .variant-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .variant-card {
+      all: unset;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      background: var(--surface-base);
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease,
+        box-shadow 150ms ease, opacity 150ms ease;
+    }
+
+    .variant-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .variant-card:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .variant-card:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .variant-preview {
+      display: flex;
+      overflow: hidden;
+      height: 56px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+    }
+
+    .preview-base {
+      flex: 2;
+      background: var(--preview-base);
+    }
+
+    .preview-raised {
+      flex: 1;
+      border-left: 1px solid var(--border-subtle);
+      background: var(--preview-raised);
+    }
+
+    .preview-line {
+      display: block;
+      height: 6px;
+      margin: 6px 8px 0;
+      border-radius: 2px;
+      background: var(--preview-text);
+    }
+
+    .preview-line.strong {
+      height: 10px;
+      margin-top: 8px;
+      opacity: 0.9;
+    }
+
+    .preview-line.medium {
+      width: 60%;
+      opacity: 0.5;
+    }
+
+    .preview-line.accent {
+      width: 40%;
+      background: var(--preview-accent);
+    }
+
+    .variant-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .variant-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .variant-name {
+      color: var(--text-1);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .variant-subcopy {
+      color: var(--text-3);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .variant-radio {
+      flex: none;
+      width: 16px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--border-strong);
+      border-radius: 999px;
+    }
+
+    .variant-card.selected .variant-radio {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    .variant-radio span {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--surface-base);
+    }
+
+    .theme-helper {
+      padding: 10px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--surface-sunken);
+      color: var(--text-2);
+      font-size: 11.5px;
+      line-height: 1.5;
     }
 
     .row {
@@ -706,12 +1046,12 @@ export class PrismPreferencePanel extends LitElement {
 
     .row-label {
       font-size: 11.5px;
-      color: var(--gray-600);
+      color: var(--text-2);
     }
 
     .hint {
       font-size: 11px;
-      color: var(--gray-500);
+      color: var(--text-3);
       line-height: 1.4;
     }
 
@@ -719,13 +1059,13 @@ export class PrismPreferencePanel extends LitElement {
       width: 80px;
       height: 26px;
       padding: 0 8px;
-      border: 1px solid var(--gray-300);
+      border: 1px solid var(--border-strong);
       border-radius: 5px;
       font: inherit;
       font-size: 12px;
-      color: var(--gray-900);
+      color: var(--text-1);
       font-variant-numeric: tabular-nums;
-      background: white;
+      background: var(--surface-base);
       outline: none;
     }
 
@@ -734,7 +1074,7 @@ export class PrismPreferencePanel extends LitElement {
     }
 
     .num:focus-visible {
-      border-color: var(--blue-700);
+      border-color: var(--focus-ring);
     }
 
     /* ---- Segmented ---- */
@@ -743,7 +1083,7 @@ export class PrismPreferencePanel extends LitElement {
       gap: 2px;
       padding: 2px;
       border-radius: 6px;
-      background: var(--gray-100);
+      background: var(--surface-sunken);
       width: fit-content;
     }
 
@@ -751,22 +1091,44 @@ export class PrismPreferencePanel extends LitElement {
       all: unset;
       box-sizing: border-box;
       padding: 4px 10px;
+      border: 1px solid transparent;
       border-radius: 4px;
       font-size: 12px;
-      color: var(--gray-600);
+      color: var(--text-2);
       cursor: pointer;
       transition: background 100ms, color 100ms;
     }
 
     .segment:hover {
-      color: var(--gray-900);
+      color: var(--text-1);
     }
 
     .segment.active {
-      background: white;
-      color: var(--gray-900);
+      background: var(--surface-base);
+      color: var(--text-1);
       font-weight: 500;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-low);
+    }
+
+    .mode-segmented {
+      flex: none;
+      padding: 3px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+
+    .mode-segmented .segment {
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    .mode-segmented .segment.active {
+      color: var(--text-1);
+      font-weight: 600;
     }
 
     /* ---- Toggle row ---- */
@@ -777,7 +1139,7 @@ export class PrismPreferencePanel extends LitElement {
       gap: 10px;
       cursor: pointer;
       font-size: 12.5px;
-      color: var(--gray-800);
+      color: var(--text-2);
     }
 
     .switch {
@@ -786,14 +1148,14 @@ export class PrismPreferencePanel extends LitElement {
       width: 28px;
       height: 16px;
       border-radius: 999px;
-      background: var(--gray-300);
+      background: var(--border-strong);
       position: relative;
       cursor: pointer;
       transition: background 120ms ease;
     }
 
     .switch.on {
-      background: var(--blue-700);
+      background: var(--accent);
     }
 
     .thumb {
@@ -803,8 +1165,8 @@ export class PrismPreferencePanel extends LitElement {
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: white;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+      background: var(--surface-base);
+      box-shadow: var(--shadow-low);
       transition: left 120ms ease;
     }
 
@@ -828,7 +1190,7 @@ export class PrismPreferencePanel extends LitElement {
       cursor: pointer;
       font-size: 12.5px;
       font-weight: 500;
-      color: var(--gray-900);
+      color: var(--text-1);
     }
 
     .focus-toggle-left {
@@ -839,7 +1201,7 @@ export class PrismPreferencePanel extends LitElement {
 
     .disclosure {
       display: inline-flex;
-      color: var(--gray-500);
+      color: var(--text-3);
       transition: transform 120ms ease;
     }
 
@@ -849,7 +1211,7 @@ export class PrismPreferencePanel extends LitElement {
 
     .focus-state {
       font-size: 11px;
-      color: var(--gray-500);
+      color: var(--text-3);
       font-weight: 400;
     }
 
@@ -862,7 +1224,7 @@ export class PrismPreferencePanel extends LitElement {
 
     .chip-group-title {
       font-size: 10.5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 500;
@@ -884,9 +1246,9 @@ export class PrismPreferencePanel extends LitElement {
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 11px;
-      color: var(--gray-700);
-      border: 1px solid var(--gray-300);
-      background: white;
+      color: var(--text-2);
+      border: 1px solid var(--border-strong);
+      background: var(--surface-base);
       cursor: pointer;
       max-width: 100%;
     }
@@ -906,19 +1268,19 @@ export class PrismPreferencePanel extends LitElement {
     }
 
     .focus-chip[data-state='include'] {
-      border-color: color-mix(in srgb, var(--blue-700) 35%, white);
-      background: color-mix(in srgb, var(--blue-700) 10%, white);
-      color: var(--blue-700);
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--surface-base));
+      background: color-mix(in srgb, var(--accent) 10%, var(--surface-base));
+      color: var(--accent);
     }
 
     .focus-chip[data-state='exclude'] {
-      border-color: color-mix(in srgb, #d14343 35%, white);
-      background: color-mix(in srgb, #d14343 9%, white);
-      color: #c53a3a;
+      border-color: color-mix(in srgb, var(--danger) 35%, var(--surface-base));
+      background: color-mix(in srgb, var(--danger) 9%, var(--surface-base));
+      color: var(--danger);
     }
 
     .focus-chip:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
   `;

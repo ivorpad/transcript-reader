@@ -14,12 +14,20 @@ import {
   createDefaultFocusModeSettings,
   createDefaultViewSettings
 } from './components/prism-preference-panel';
+import {
+  getMode,
+  getVariant,
+  initTheme,
+  setMode,
+  setVariant
+} from './utils/theme';
 import type {
   PrismFocusBucket,
   PrismFocusChipState,
   PrismFocusModeSettings,
   PrismViewSettings
 } from './components/prism-preference-panel';
+import type { DarkVariant, ThemeMode } from './utils/theme';
 import type {
   ClaudeMetaSummary,
   ClaudeSessionParseResult,
@@ -276,6 +284,12 @@ export class PrismApp extends LitElement {
   private viewSettings: PrismViewSettings = createDefaultViewSettings();
 
   @state()
+  private themeMode: ThemeMode = getMode();
+
+  @state()
+  private darkVariant: DarkVariant = getVariant();
+
+  @state()
   private renderMarkdown = false;
 
   @state()
@@ -472,9 +486,14 @@ export class PrismApp extends LitElement {
                     .availableContentTypes=${this.#availableContentTypes()}
                     .settings=${this.focusModeSettings}
                     .viewSettings=${this.viewSettings}
+                    .themeMode=${this.themeMode}
+                    .darkVariant=${this.darkVariant}
                     @prism-request-close=${this.#handlePreferenceClose}
                     @prism-focus-mode-change=${this.#handleFocusModeChange}
                     @prism-view-settings-change=${this.#handleViewSettingsChange}
+                    @prism-theme-mode-change=${this.#handleThemeModeChange}
+                    @prism-theme-variant-change=${this
+                      .#handleThemeVariantChange}
                   ></prism-preference-panel>
                 `
               : nothing}
@@ -662,15 +681,6 @@ export class PrismApp extends LitElement {
   }
 
   #renderDemoOverview() {
-    const features = [
-      ['Timeline', 'Read user, assistant, tool, thinking, and event messages in order.'],
-      ['Focus Mode', 'Include or exclude roles, tools, and content types.'],
-      ['Metadata', 'Inspect raw session and message JSON without leaving the timeline.'],
-      ['Markdown', 'Toggle sanitized markdown rendering for assistant text.'],
-      ['Sidechain', 'Keep subagent branches visible and filter them when needed.'],
-      ['Export', 'Copy JSON, download a session, or open a clean render view.']
-    ];
-
     return html`
       <section class="demo-overview">
         <div class="demo-copy">
@@ -695,16 +705,6 @@ export class PrismApp extends LitElement {
           <span>Your files stay in the browser.</span>
         </div>
 
-        <ul class="demo-features" aria-label="Prism features">
-          ${features.map(
-            ([title, body]) => html`
-              <li>
-                <strong>${title}</strong>
-                <span>${body}</span>
-              </li>
-            `
-          )}
-        </ul>
       </section>
     `;
   }
@@ -1187,6 +1187,9 @@ export class PrismApp extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    initTheme();
+    this.themeMode = getMode();
+    this.darkVariant = getVariant();
     this.viewSettings = this.#readViewSettingsFromLocation();
     document.addEventListener('click', this.#handleDocumentClick);
     document.addEventListener('keydown', this.#handleKeydown);
@@ -1206,6 +1209,16 @@ export class PrismApp extends LitElement {
   #handleViewSettingsChange(event: CustomEvent<PrismViewSettings>): void {
     this.viewSettings = event.detail;
     this.#syncViewSettingsToLocation();
+  }
+
+  #handleThemeModeChange(event: CustomEvent<ThemeMode>): void {
+    this.themeMode = event.detail;
+    setMode(event.detail);
+  }
+
+  #handleThemeVariantChange(event: CustomEvent<DarkVariant>): void {
+    this.darkVariant = event.detail;
+    setVariant(event.detail);
   }
 
   #handlePreferenceClose(): void {
@@ -1416,7 +1429,8 @@ export class PrismApp extends LitElement {
       return;
     }
 
-    const openedWindow = window.open('', '_blank', 'noopener,noreferrer');
+    // 'noopener' would make window.open return null; we need the handle to write into.
+    const openedWindow = window.open('', '_blank');
     if (!openedWindow) {
       this.#setConversationActionStatus(
         conversationKey,
@@ -1425,6 +1439,7 @@ export class PrismApp extends LitElement {
       return;
     }
 
+    const palette = this.#getRenderViewPalette();
     const transcript = this.#getTimelineMessages(conversationRecord)
       .map(message => {
         const heading = [
@@ -1435,9 +1450,9 @@ export class PrismApp extends LitElement {
           .filter(Boolean)
           .join(' · ');
 
-        return `<section style="margin:0 0 16px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-          <div style="margin:0 0 8px;color:#6b7280;font:12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${this.#escapeHtml(heading)}</div>
-          <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,'SFMono-Regular',monospace;">${this.#escapeHtml(message.text)}</pre>
+        return `<section style="margin:0 0 16px;padding:12px;border:1px solid ${palette.borderSubtle};border-radius:8px;background:${palette.surfaceBase};">
+          <div style="margin:0 0 8px;color:${palette.text3};font:12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${this.#escapeHtml(heading)}</div>
+          <pre style="margin:0;white-space:pre-wrap;word-break:break-word;color:${palette.text2};font:13px/1.5 ui-monospace,'SFMono-Regular',monospace;">${this.#escapeHtml(message.text)}</pre>
         </section>`;
       })
       .join('');
@@ -1448,7 +1463,7 @@ export class PrismApp extends LitElement {
     <meta charset="utf-8" />
     <title>Claude Render View</title>
   </head>
-  <body style="margin:0;padding:24px;background:#f8fafc;color:#111827;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <body style="margin:0;padding:24px;background:${palette.surfaceRaised};color:${palette.text1};font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
     <h1 style="margin:0 0 16px;font-size:20px;">${this.#escapeHtml(conversationRecord.conversation.title)}</h1>
     ${transcript}
   </body>
@@ -1457,6 +1472,24 @@ export class PrismApp extends LitElement {
     this.#setConversationActionStatus(
       conversationKey,
       'Opened Claude render view'
+    );
+  }
+
+  #getRenderViewPalette() {
+    return {
+      surfaceBase: this.#readCssToken('--surface-base', 'Canvas'),
+      surfaceRaised: this.#readCssToken('--surface-raised', 'Canvas'),
+      borderSubtle: this.#readCssToken('--border-subtle', 'ButtonBorder'),
+      text1: this.#readCssToken('--text-1', 'CanvasText'),
+      text2: this.#readCssToken('--text-2', 'CanvasText'),
+      text3: this.#readCssToken('--text-3', 'GrayText')
+    };
+  }
+
+  #readCssToken(name: string, fallback: string): string {
+    return (
+      getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+      fallback
     );
   }
 
@@ -1497,7 +1530,7 @@ export class PrismApp extends LitElement {
     :host {
       display: block;
       height: 100%;
-      color: var(--gray-800);
+      color: var(--text-2);
     }
 
     .app {
@@ -1505,7 +1538,7 @@ export class PrismApp extends LitElement {
       min-height: 100%;
       display: flex;
       flex-direction: column;
-      background: white;
+      background: var(--surface-base);
     }
 
     /* ---- Header: 48px single row, content centered to 1100px ---- */
@@ -1515,8 +1548,8 @@ export class PrismApp extends LitElement {
       z-index: 10;
       width: 100%;
       height: var(--header-height, 48px);
-      background: white;
-      border-bottom: 1px solid var(--gray-200);
+      background: var(--surface-base);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: center;
     }
@@ -1543,12 +1576,12 @@ export class PrismApp extends LitElement {
       font-weight: 700;
       font-size: 15px;
       letter-spacing: -0.01em;
-      color: var(--gray-900);
+      color: var(--text-1);
     }
 
     .brand-sub {
       font-size: 11.5px;
-      color: var(--gray-500);
+      color: var(--text-3);
     }
 
     .dropzone {
@@ -1558,10 +1591,10 @@ export class PrismApp extends LitElement {
       display: flex;
       align-items: center;
       padding: 0 12px;
-      border: 1px dashed var(--gray-300);
+      border: 1px dashed var(--border-strong);
       border-radius: 8px;
-      background: var(--gray-50);
-      color: var(--gray-500);
+      background: var(--surface-raised);
+      color: var(--text-3);
       font-size: 12px;
       overflow: hidden;
       white-space: nowrap;
@@ -1570,7 +1603,7 @@ export class PrismApp extends LitElement {
     }
 
     .dropzone:hover {
-      border-color: var(--gray-400);
+      border-color: var(--text-4);
     }
 
     .dropzone-text {
@@ -1581,11 +1614,11 @@ export class PrismApp extends LitElement {
 
     .dropzone-text code {
       font-size: 11px;
-      color: var(--gray-700);
+      color: var(--text-2);
     }
 
     .staged-count {
-      color: var(--gray-700);
+      color: var(--text-2);
       font-weight: 500;
     }
 
@@ -1595,9 +1628,9 @@ export class PrismApp extends LitElement {
       align-items: center;
       justify-content: center;
       height: 30px;
-      border: 1px solid var(--gray-300);
+      border: 1px solid var(--border-strong);
       border-radius: 8px;
-      background: white;
+      background: var(--surface-base);
       cursor: pointer;
       flex-shrink: 0;
       transition: background 120ms ease, color 120ms ease,
@@ -1606,38 +1639,38 @@ export class PrismApp extends LitElement {
 
     .header-btn.load {
       padding: 0 14px;
-      color: var(--gray-800);
+      color: var(--text-2);
       font-size: 13px;
       font-weight: 500;
     }
 
     .header-btn.load:hover:not(:disabled) {
-      background: var(--gray-50);
+      background: var(--surface-raised);
     }
 
     .header-btn.load:disabled {
-      background: var(--gray-50);
-      color: var(--gray-400);
+      background: var(--surface-raised);
+      color: var(--text-4);
       cursor: not-allowed;
     }
 
     .header-btn.icon {
       width: 30px;
-      color: var(--gray-700);
+      color: var(--text-2);
     }
 
     .header-btn.icon:hover {
-      background: var(--gray-50);
-      color: var(--gray-900);
+      background: var(--surface-raised);
+      color: var(--text-1);
     }
 
     .header-btn.icon[data-active] {
-      background: var(--gray-100);
-      color: var(--gray-900);
+      background: var(--surface-sunken);
+      color: var(--text-1);
     }
 
     .header-btn:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
 
@@ -1656,11 +1689,9 @@ export class PrismApp extends LitElement {
       min-width: 220px;
       padding: 4px;
       border-radius: 8px;
-      background: white;
-      border: 1px solid var(--gray-200);
-      box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.04),
-        0 8px 24px rgba(0, 0, 0, 0.08);
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-menu);
     }
 
     .menu-item {
@@ -1671,18 +1702,18 @@ export class PrismApp extends LitElement {
       gap: 10px;
       padding: 7px 10px;
       border-radius: 5px;
-      color: var(--gray-800);
+      color: var(--text-2);
       cursor: pointer;
       font-size: 13px;
     }
 
     .menu-item:hover {
-      background: var(--gray-100);
+      background: var(--surface-sunken);
     }
 
     .menu-item-icon {
       display: inline-flex;
-      color: var(--gray-600);
+      color: var(--text-2);
     }
 
     .file-menu-item input {
@@ -1729,10 +1760,10 @@ export class PrismApp extends LitElement {
       gap: 14px;
       flex-wrap: wrap;
       font-size: 11.5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       padding-bottom: 10px;
       margin-bottom: 12px;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .status-file {
@@ -1742,24 +1773,24 @@ export class PrismApp extends LitElement {
     }
 
     .status-file-name {
-      color: var(--gray-700);
+      color: var(--text-2);
     }
 
     .status-sep {
-      color: var(--gray-300);
+      color: var(--text-4);
     }
 
     .status-detect {
-      color: var(--gray-600);
+      color: var(--text-2);
     }
 
     .metric {
-      color: var(--gray-500);
+      color: var(--text-3);
     }
 
     .metric strong {
       font-weight: 500;
-      color: var(--gray-900);
+      color: var(--text-1);
       font-variant-numeric: tabular-nums;
     }
 
@@ -1775,13 +1806,13 @@ export class PrismApp extends LitElement {
     }
 
     .sidechain-toggle input {
-      accent-color: var(--blue-700);
+      accent-color: var(--accent);
       margin: 0;
     }
 
     .filter-summary {
       margin-bottom: 10px;
-      color: var(--gray-600);
+      color: var(--text-2);
       font-size: 12px;
     }
 
@@ -1804,25 +1835,25 @@ export class PrismApp extends LitElement {
     .empty-state {
       padding: 40px 24px;
       border-radius: var(--radius, 8px);
-      border: 1px dashed var(--gray-300);
-      background: white;
+      border: 1px dashed var(--border-strong);
+      background: var(--surface-base);
       text-align: center;
     }
 
     .empty-state-title {
-      color: var(--gray-900);
+      color: var(--text-1);
       font-weight: 500;
       margin-bottom: 4px;
     }
 
     .empty-state-body {
-      color: var(--gray-600);
+      color: var(--text-2);
       font-size: 13px;
     }
 
     .empty-state code {
       padding: 1px 5px;
-      background: var(--gray-100);
+      background: var(--surface-sunken);
       border-radius: 3px;
       font-size: 12px;
     }
@@ -1834,7 +1865,7 @@ export class PrismApp extends LitElement {
       gap: 12px 28px;
       padding: 2px 0 14px;
       margin-bottom: 12px;
-      border-bottom: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .demo-copy {
@@ -1843,7 +1874,7 @@ export class PrismApp extends LitElement {
 
     .demo-kicker {
       margin-bottom: 5px;
-      color: var(--gray-500);
+      color: var(--text-3);
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
@@ -1851,7 +1882,7 @@ export class PrismApp extends LitElement {
 
     .demo-copy h1 {
       margin: 0;
-      color: var(--gray-900);
+      color: var(--text-1);
       font-size: 18px;
       line-height: 1.25;
       font-weight: 650;
@@ -1861,7 +1892,7 @@ export class PrismApp extends LitElement {
     .demo-copy p {
       margin: 6px 0 0;
       max-width: 760px;
-      color: var(--gray-600);
+      color: var(--text-2);
       font-size: 13px;
       line-height: 1.5;
     }
@@ -1872,7 +1903,7 @@ export class PrismApp extends LitElement {
       justify-content: flex-end;
       gap: 10px;
       flex-wrap: wrap;
-      color: var(--gray-500);
+      color: var(--text-3);
       font-size: 12px;
     }
 
@@ -1884,8 +1915,8 @@ export class PrismApp extends LitElement {
       min-height: 30px;
       padding: 0 12px;
       border-radius: 7px;
-      background: var(--gray-900);
-      color: white;
+      background: var(--text-1);
+      color: var(--surface-base);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -1893,44 +1924,15 @@ export class PrismApp extends LitElement {
     }
 
     .demo-load:hover {
-      background: var(--gray-800);
+      background: var(--text-2);
       transform: translateY(-1px);
     }
 
     .demo-load:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
 
-    .demo-features {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0;
-      margin: 4px 0 0;
-      padding: 8px 0 0;
-      list-style: none;
-      border-top: 1px solid var(--gray-100);
-    }
-
-    .demo-features li {
-      min-width: 0;
-      display: grid;
-      gap: 2px;
-      padding: 7px 16px 7px 0;
-    }
-
-    .demo-features strong {
-      color: var(--gray-900);
-      font-size: 12px;
-      font-weight: 650;
-    }
-
-    .demo-features span {
-      color: var(--gray-600);
-      font-size: 12px;
-      line-height: 1.45;
-    }
 
     @media (max-width: 980px) {
       .content {
@@ -1945,9 +1947,6 @@ export class PrismApp extends LitElement {
         justify-content: flex-start;
       }
 
-      .demo-features {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 720px) {
@@ -1967,10 +1966,6 @@ export class PrismApp extends LitElement {
       .sidechain-toggle {
         margin-left: 0;
         flex-basis: 100%;
-      }
-
-      .demo-features {
-        grid-template-columns: 1fr;
       }
 
       .demo-actions {

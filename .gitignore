@@ -25,3 +25,5 @@ dist-ssr
 .superpowers/
 docs/superpowers/
 PROBLEM.md
+.playwright-cli/
+.claude/scheduled_tasks.lock

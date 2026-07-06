@@ -122,14 +122,14 @@ export class PrismMessageText extends LitElement {
 
     .rendered blockquote {
       padding-left: 0.9rem;
-      border-left: 3px solid var(--gray-300, #dadada);
-      color: var(--gray-700, #595959);
+      border-left: 3px solid var(--border-strong);
+      color: var(--text-2);
     }
 
     .rendered code {
       padding: 0.08rem 0.3rem;
       border-radius: 4px;
-      background: var(--gray-100, #f3f3f3);
+      background: var(--surface-sunken);
       font-family:
         ui-monospace,
         'SFMono-Regular',
@@ -141,7 +141,7 @@ export class PrismMessageText extends LitElement {
       overflow: auto;
       padding: 10px 12px;
       border-radius: 6px;
-      background: var(--gray-100, #f3f3f3);
+      background: var(--surface-sunken);
     }
 
     .rendered pre code {
@@ -152,7 +152,7 @@ export class PrismMessageText extends LitElement {
     }
 
     .rendered a {
-      color: var(--blue-700, #1e76d8);
+      color: var(--accent);
       text-decoration: none;
     }
 
@@ -171,20 +171,20 @@ export class PrismMessageText extends LitElement {
 
     .rendered table :is(th, td) {
       padding: 5px 10px;
-      border: 1px solid var(--gray-200, #e9e9e9);
+      border: 1px solid var(--border-subtle);
       text-align: left;
       vertical-align: top;
       line-height: 1.45;
     }
 
     .rendered table th {
-      background: var(--gray-50, #fafafa);
-      color: var(--gray-900, #1f1f1f);
+      background: var(--surface-raised);
+      color: var(--text-1);
       font-weight: 600;
     }
 
     .rendered table tbody tr:nth-child(even) td {
-      background: var(--gray-50, #fafafa);
+      background: var(--surface-raised);
     }
 
     .rendered table :is(th, td)[align='right'] {

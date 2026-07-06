@@ -9,6 +9,14 @@ export class PrismMessageHidden extends LitElement {
   @property({ attribute: false })
   message: NormalizedMessage | null = null;
 
+  updated(): void {
+    if (!this.message) {
+      return;
+    }
+
+    this.dataset.channel = this.message.channel;
+  }
+
   render() {
     const role = this.message?.role ?? 'user';
     const channel = this.message?.channel ?? 'message';
@@ -86,20 +94,20 @@ export class PrismMessageHidden extends LitElement {
       column-gap: 10px;
       width: 100%;
       padding: 5px 10px 5px 8px;
-      border: 1px solid var(--gray-200);
+      border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      background: var(--gray-50);
+      background: var(--surface-sunken);
       cursor: pointer;
       transition: background 120ms ease, border-color 120ms ease;
     }
 
     .hidden-stub:hover {
-      background: white;
-      border-color: var(--gray-300);
+      background: var(--surface-base);
+      border-color: var(--border-strong);
     }
 
     .hidden-stub:focus-visible {
-      outline: 2px solid var(--blue-700);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 1px;
     }
 
@@ -107,22 +115,32 @@ export class PrismMessageHidden extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(--gray-500);
+      color: var(--text-3);
       opacity: 0.7;
     }
 
     .rail-user {
-      color: var(--green-700);
+      color: var(--role-user);
     }
 
     .rail-assistant,
     .rail-tool {
-      color: var(--purple-700);
+      color: var(--role-asst);
     }
 
     .rail-system,
     .rail-meta {
-      color: var(--gray-500);
+      color: var(--text-3);
+    }
+
+    :host([data-channel='tool_result']) .rail-tool {
+      color: var(--role-tool-res);
+    }
+
+    /* tool_call arrives as role 'assistant' (demo session) or 'tool' (parser) */
+    :host([data-channel='tool_call']) .rail-assistant,
+    :host([data-channel='tool_call']) .rail-tool {
+      color: var(--role-tool-call);
     }
 
     .chips {
@@ -141,8 +159,8 @@ export class PrismMessageHidden extends LitElement {
       line-height: 1.5;
       font-weight: 400;
       white-space: nowrap;
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
       font-variant-numeric: tabular-nums;
     }
 
@@ -151,33 +169,48 @@ export class PrismMessageHidden extends LitElement {
     }
 
     .chip.role-user {
-      color: var(--green-700);
-      background: hsl(122, 43%, 96%);
+      color: var(--role-user);
+      background: var(--role-user-bg);
     }
 
     .chip.role-assistant,
     .chip.role-tool {
-      color: var(--purple-700);
-      background: hsl(282, 68%, 97%);
+      color: var(--role-asst);
+      background: var(--role-asst-bg);
+    }
+
+    :host([data-channel='tool_result']) .chip.role-tool {
+      color: var(--role-tool-res);
+      background: var(--role-tool-res-bg);
+    }
+
+    :host([data-channel='tool_call']) .chip.channel {
+      color: var(--role-tool-call);
+      background: var(--role-tool-call-bg);
+    }
+
+    :host([data-channel='tool_result']) .chip.channel {
+      color: var(--role-tool-res);
+      background: var(--role-tool-res-bg);
     }
 
     .chip.role-system,
     .chip.role-meta {
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
     }
 
     .chip.channel,
     .chip.name {
-      color: var(--gray-600);
-      background: var(--gray-100);
+      color: var(--text-2);
+      background: var(--surface-sunken);
     }
 
     .reveal {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      color: var(--gray-500);
+      color: var(--text-3);
       font-size: 11px;
     }
   `;

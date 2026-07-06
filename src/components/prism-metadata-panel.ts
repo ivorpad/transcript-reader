@@ -108,14 +108,14 @@ export class PrismMetadataPanel extends LitElement {
 
     .eyebrow {
       margin: 0;
-      color: var(--gray-500, #7c7c7c);
+      color: var(--text-3);
       font-size: 12px;
     }
 
     h2 {
       margin: 0;
       font-size: 16px;
-      color: var(--gray-900, #242424);
+      color: var(--text-1);
       font-weight: 500;
     }
 
@@ -123,8 +123,8 @@ export class PrismMetadataPanel extends LitElement {
     .warnings {
       padding: 10px 12px;
       border-radius: 5px;
-      border: 1px solid var(--gray-200, #ebebeb);
-      background: white;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-raised);
     }
 
     .summary {
@@ -140,13 +140,13 @@ export class PrismMetadataPanel extends LitElement {
     .summary-label,
     .warnings-title {
       font-size: 12px;
-      color: var(--gray-500, #7c7c7c);
+      color: var(--text-3);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
     .summary-value {
-      color: var(--gray-800, #383838);
+      color: var(--text-2);
       font-size: 13px;
       word-break: break-word;
     }
@@ -154,7 +154,7 @@ export class PrismMetadataPanel extends LitElement {
     .warnings ul {
       margin: 8px 0 0;
       padding-left: 18px;
-      color: var(--gray-700, #5c5c5c);
+      color: var(--text-2);
       font-size: 13px;
       line-height: 1.45;
     }
@@ -165,9 +165,9 @@ export class PrismMetadataPanel extends LitElement {
       overflow: auto;
       padding: 10px 12px;
       border-radius: 5px;
-      background: var(--gray-100, #f5f5f5);
-      color: var(--gray-800, #383838);
-      border: 1px solid var(--gray-200, #ebebeb);
+      background: var(--surface-sunken);
+      color: var(--text-2);
+      border: 1px solid var(--border-subtle);
       font-family:
         ui-monospace,
         'SFMono-Regular',
