@@ -918,10 +918,12 @@ const buildLedger = (
   const folded = new Set<object>();
   const unrecognisedTypes = new Map<string, number>();
 
+  const counted = new Set<object>();
   const note = (message: NormalizedMessage, into: Set<object>) => {
     into.add(message.raw);
     const kind = message.eventKind;
-    if (kind?.startsWith('unknown:')) {
+    if (kind?.startsWith('unknown:') && !counted.has(message.raw)) {
+      counted.add(message.raw);
       const type = kind.slice('unknown:'.length);
       unrecognisedTypes.set(type, (unrecognisedTypes.get(type) ?? 0) + 1);
     }

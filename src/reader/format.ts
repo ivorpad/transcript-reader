@@ -17,7 +17,8 @@ export const usd = (value: number | null | undefined): string | null =>
 
 export const shortId = (id: string | null | undefined, head = 8, tail = 4): string => {
   if (!id) return '';
-  return id.length > head + tail + 1 ? `${id.slice(0, head)}…${id.slice(-tail)}` : id;
+  if (id.length <= head + tail + 1) return id;
+  return tail > 0 ? `${id.slice(0, head)}…${id.slice(-tail)}` : `${id.slice(0, head)}…`;
 };
 
 export const shortModel = (model: string | null | undefined): string =>

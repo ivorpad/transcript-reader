@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "audit": "bun tools/audit-corpus.ts",
     "typecheck": "tsc --noEmit && tsc -p tools --noEmit",
-    "fixtures": "bun tools/build-fixtures.ts"
+    "fixtures": "bun tools/build-fixtures.ts",
+    "sample": "bun tools/build-sample.ts --out docs/sample"
   },
   "dependencies": {
     "dompurify": "^3.4.1",

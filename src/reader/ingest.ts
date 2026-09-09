@@ -262,9 +262,19 @@ const journalsUnder = (records: LoadedRecord[], record: LoadedRecord): JournalRe
   return { started, finished };
 };
 
-/** The fleet of a session: its Agent calls, enriched by whatever else was loaded. */
-export const fleetFor = (records: LoadedRecord[], record: LoadedRecord): FleetView => {
-  const linked: LinkedAgentRecord[] = childrenOf(records, record.key).map(child => ({
+/**
+ * The fleet of a session: its Agent calls, enriched by whatever else was
+ * loaded. An agent whose transcript was loaded may have spawned agents of its
+ * own; those follow it in the list at their depth, so the tree reads top down.
+ */
+export const fleetFor = (
+  records: LoadedRecord[],
+  record: LoadedRecord,
+  seen = new Set<string>()
+): FleetView => {
+  seen.add(record.key);
+  const children = childrenOf(records, record.key);
+  const linked: LinkedAgentRecord[] = children.map(child => ({
     recordKey: child.key,
     toolUseId: child.parentToolUseId ?? child.meta?.toolUseId ?? null,
     agentId: child.meta?.agentId ?? null,
@@ -274,7 +284,14 @@ export const fleetFor = (records: LoadedRecord[], record: LoadedRecord): FleetVi
     rowCount: child.view.ledger.rowCount
   }));
   const depth = record.meta?.spawnDepth ?? 0;
-  return buildFleet(record.view, linked, journalsUnder(records, record), depth);
+  const own = buildFleet(record.view, linked, journalsUnder(records, record), depth);
+
+  const agents = own.agents.flatMap(agent => {
+    const child = agent.recordKey ? children.find(candidate => candidate.key === agent.recordKey) : undefined;
+    if (!child || seen.has(child.key)) return [agent];
+    return [agent, ...fleetFor(records, child, seen).agents];
+  });
+  return { agents };
 };
 
 /** The parsed meta of a record, for the header of a subagent transcript. */

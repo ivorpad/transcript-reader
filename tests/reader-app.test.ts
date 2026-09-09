@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import '../src/reader/reader-app';
 import type { TranscriptReader } from '../src/reader/reader-app';
 import { buildRecords, fleetFor, pairingStem, readLoadedFile, rootRecords } from '../src/reader/ingest';
+import { shortId } from '../src/reader/format';
 
 const fixture = (name: string) =>
   readFileSync(join(process.cwd(), 'tests/fixtures', name), 'utf8');
@@ -182,6 +183,31 @@ describe('ingestion', () => {
     expect(fleet.agents[0]).toMatchObject({ type: 'flake-hunter', status: 'finished', rowCount: 2, recordKey: subagent?.key });
   });
 
+  test('lists an agent spawned by an agent after its parent, at depth two', () => {
+    const grandchild = [
+      line({ type: 'user', uuid: 'g1', parentUuid: null, sessionId: 'gc', agentId: 'ag_2', isSidechain: true, timestamp: t(40), message: { role: 'user', content: 'reduce' } })
+    ].join('\n');
+    const child = [
+      line({ type: 'user', uuid: 'c1', parentUuid: null, sessionId: 'child', agentId: 'ag_1', isSidechain: true, timestamp: t(32), message: { role: 'user', content: 'look' } }),
+      call('c2', 'toolu_inner', 'Agent', { description: 'Reduce it', subagent_type: 'log-reducer', prompt: 'r' }, 35),
+      result('c3', 'toolu_inner', 'stopped', 60, { toolUseResult: { agentId: 'ag_2', agentType: 'log-reducer', status: 'stopped' } }),
+      line({ type: 'assistant', uuid: 'c4', parentUuid: 'c3', sessionId: 'child', agentId: 'ag_1', isSidechain: true, timestamp: t(90), message: { role: 'assistant', content: [{ type: 'text', text: 'found it' }] } })
+    ].join('\n');
+    const records = buildRecords([
+      { name: 'proj/parent.jsonl', text: richSession },
+      { name: 'proj/parent/subagents/ag_1.jsonl', text: child },
+      { name: 'proj/parent/subagents/ag_1.meta.json', text: JSON.stringify({ agentType: 'flake-hunter', toolUseId: 'toolu_agent', spawnDepth: 1 }) },
+      { name: 'proj/parent/subagents/ag_2.jsonl', text: grandchild },
+      { name: 'proj/parent/subagents/ag_2.meta.json', text: JSON.stringify({ agentType: 'log-reducer', toolUseId: 'toolu_inner', spawnDepth: 2, parentAgentId: 'ag_1', stoppedByUser: true }) }
+    ]);
+    const parent = records.find(record => record.fileName === 'proj/parent.jsonl') as NonNullable<(typeof records)[number]>;
+    const fleet = fleetFor(records, parent);
+    expect(fleet.agents.map(agent => [agent.type, agent.depth, agent.status])).toEqual([
+      ['flake-hunter', 1, 'finished'],
+      ['log-reducer', 2, 'stopped']
+    ]);
+  });
+
   test('inlines a spilled tool-results file and rebuilds the view', () => {
     const withSpill = [
       call('a1', 'toolu_1', 'Bash', { command: 'ls' }, 0),
@@ -194,6 +220,12 @@ describe('ingestion', () => {
     const row = records[0].conversation.messages.find(message => message.channel === 'tool_result');
     expect(row?.text).toContain('the real output was here');
     expect(records[0].view.entries[0].result?.text).toContain('the real output was here');
+  });
+
+  test('shortens an id with or without a tail', () => {
+    expect(shortId('0f3c9a1e-7d2b-4c1e-9a55-2c8e4f61d84b', 8, 4)).toBe('0f3c9a1e…d84b');
+    expect(shortId('0f3c9a1e-7d2b-4c1e-9a55-2c8e4f61d84b', 8, 0)).toBe('0f3c9a1e…');
+    expect(shortId('short', 8, 4)).toBe('short');
   });
 
   test('reads a File with its relative path', async () => {

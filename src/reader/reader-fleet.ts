@@ -133,7 +133,7 @@ export class ReaderFleet extends LitElement {
             return html`
               <div class="card edge-${tone || 'violet'} ${tone}" style=${`margin-left:${agent.depth * 18}px`}>
                 <div class="card-head">
-                  <span class="type mono ${tone}">${agent.name ? `${agent.name} · ` : ''}${agent.type}</span>
+                  <span class="type mono ${tone}">${agent.name && agent.name !== agent.type ? `${agent.name} · ` : ''}${agent.type}</span>
                   ${agent.agentId ? html`<span class="mono muted small">${shortId(agent.agentId, 8, 3)}</span>` : nothing}
                   <span class="pill ${tone}">${statusLabel(agent)}</span>
                   ${agent.worktree ? html`<span class="chip mono">worktree ${agent.worktree}</span>` : nothing}

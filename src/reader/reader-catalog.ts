@@ -219,6 +219,7 @@ export class ReaderCatalog extends LitElement {
       .item {
         display: inline-flex;
         align-items: center;
+        gap: 5px;
         height: var(--badge-height);
         font-size: 11px;
         padding: 0 6px;

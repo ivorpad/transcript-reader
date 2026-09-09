@@ -765,7 +765,12 @@ export class TranscriptReader extends LitElement {
         return entry.sub;
       case 'tool':
       case 'diff':
-        return clip(`${entry.message?.text.split('\n')[0] ?? ''}${entry.sub && entry.tag !== 'bash' ? ` · ${entry.sub}` : entry.sub ? ` · ${entry.sub}` : ''}`, 110);
+        return clip(
+          entry.tag === 'bash'
+            ? `${entry.message?.text.split('\n')[0] ?? ''}${entry.sub ? ` · ${entry.sub}` : ''}`
+            : entry.sub || (entry.message?.text.split('\n')[0] ?? ''),
+          110
+        );
       case 'agent':
         return clip(`${entry.agentType} · ${entry.agentAsk ?? ''}`, 110);
       case 'gap':
