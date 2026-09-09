@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import type { NormalizedMessage, PrismImage, ReaderEntry } from '../types/prism';
+import type { NormalizedMessage, MessageImage, ReaderEntry } from '../types/reader';
 import { formatDuration, outputMeta } from '../adapters/claude/session';
 import { renderMarkdown } from '../utils/markdown';
 import { foldedDetail, foldedMeta, humanBytes, shortId } from './format';
@@ -42,10 +42,10 @@ const badgeTone = (badge: string): string => {
   return '';
 };
 
-const imageBytes = (image: PrismImage): number => image.bytes ?? Math.floor((image.url.length * 3) / 4);
+const imageBytes = (image: MessageImage): number => image.bytes ?? Math.floor((image.url.length * 3) / 4);
 
 /** Base64 to a Blob behind an object URL, so the DOM holds a reference and not the payload. */
-const decodeImage = (image: PrismImage): string => {
+const decodeImage = (image: MessageImage): string => {
   if (!image.url.startsWith('data:')) return image.url;
   const comma = image.url.indexOf(',');
   const binary = atob(image.url.slice(comma + 1));
@@ -359,7 +359,7 @@ export class ReaderRow extends LitElement {
     return html`${entry.images.map((image, index) => this.#renderImage(image, index))}`;
   }
 
-  #renderImage(image: PrismImage, index: number) {
+  #renderImage(image: MessageImage, index: number) {
     const url = this.decoded.get(index);
     const bytes = imageBytes(image);
     return html`

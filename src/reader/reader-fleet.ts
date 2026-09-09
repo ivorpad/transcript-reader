@@ -1,7 +1,7 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import type { FleetAgent, FleetStatus, FleetView, SessionView } from '../types/prism';
+import type { FleetAgent, FleetStatus, FleetView, SessionView } from '../types/reader';
 import { agentDurationMs, fleetSummary } from '../adapters/claude/fleet';
 import { activeOffset, formatDuration } from '../adapters/claude/session';
 import { plural, shortId, usd } from './format';

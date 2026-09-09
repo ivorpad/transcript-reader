@@ -1,4 +1,4 @@
-import type { NormalizedMessage, ReaderEntry } from '../types/prism';
+import type { NormalizedMessage, ReaderEntry } from '../types/reader';
 import { humanBytes, shortId } from './format';
 
 type UnknownRecord = Record<string, unknown>;

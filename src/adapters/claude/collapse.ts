@@ -1,7 +1,7 @@
 import { classifyMessage, dispositionOfMessage } from './catalog';
-import type { NormalizedMessage, PrismSeverity } from '../../types/prism';
+import type { NormalizedMessage, Severity } from '../../types/reader';
 
-const SEVERITY_ORDER: PrismSeverity[] = ['info', 'notice', 'warning', 'error'];
+const SEVERITY_ORDER: Severity[] = ['info', 'notice', 'warning', 'error'];
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -13,7 +13,7 @@ const scopedToolUseId = (message: NormalizedMessage): string | undefined => {
   return typeof id === 'string' ? id : undefined;
 };
 
-const worst = (messages: NormalizedMessage[]): PrismSeverity => {
+const worst = (messages: NormalizedMessage[]): Severity => {
   let rank = 0;
   for (const message of messages) {
     const at = SEVERITY_ORDER.indexOf(message.severity ?? 'info');

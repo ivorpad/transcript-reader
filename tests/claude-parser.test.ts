@@ -11,7 +11,7 @@ import { buildSessionView } from '../src/adapters/claude/session';
 import type {
   ClaudeSessionParseResult,
   NormalizedMessage
-} from '../src/types/prism';
+} from '../src/types/reader';
 
 /**
  * A line can be a drawn row, a member of a collapsed run, folded onto a row,
@@ -157,12 +157,12 @@ describe('Claude session parsing', () => {
         parentUuid: null,
         isSidechain: false,
         type: 'user',
-        message: { role: 'user', content: 'hello prism' },
+        message: { role: 'user', content: 'hello there' },
         uuid: 'user-1',
         timestamp: '2026-04-24T01:00:00.000Z',
         userType: 'external',
         entrypoint: 'cli',
-        cwd: '/tmp/prism',
+        cwd: '/tmp/work',
         sessionId,
         version: '2.1.101',
         gitBranch: 'main',
@@ -199,7 +199,7 @@ describe('Claude session parsing', () => {
         timestamp: '2026-04-24T01:00:01.000Z',
         userType: 'external',
         entrypoint: 'cli',
-        cwd: '/tmp/prism',
+        cwd: '/tmp/work',
         sessionId,
         version: '2.1.101',
         gitBranch: 'main',
@@ -229,7 +229,7 @@ describe('Claude session parsing', () => {
         timestamp: '2026-04-24T01:00:02.000Z',
         userType: 'external',
         entrypoint: 'cli',
-        cwd: '/tmp/prism',
+        cwd: '/tmp/work',
         sessionId,
         version: '2.1.101',
         gitBranch: 'main',
@@ -245,7 +245,7 @@ describe('Claude session parsing', () => {
         compactMetadata: { trigger: 'manual', preTokens: 1234 },
         timestamp: '2026-04-24T01:00:03.000Z',
         sessionId,
-        cwd: '/tmp/prism',
+        cwd: '/tmp/work',
         version: '2.1.101',
         gitBranch: 'main'
       },

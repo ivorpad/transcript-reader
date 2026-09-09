@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import type { FoldedType, NormalizedMessage, SessionView } from '../types/prism';
+import type { FoldedType, NormalizedMessage, SessionView } from '../types/reader';
 import { foldNote } from '../adapters/claude/session';
 import { humanBytes, plural, safeRawJson } from './format';
 import { sharedStyles } from './styles';

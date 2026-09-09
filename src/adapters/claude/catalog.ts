@@ -2,7 +2,7 @@ import type {
   FoldDisposition,
   LineClass,
   NormalizedMessage
-} from '../../types/prism';
+} from '../../types/reader';
 import { userLineKind } from './prompts';
 
 type UnknownRecord = Record<string, unknown>;

@@ -15,7 +15,7 @@ import {
 } from '../src/adapters/claude/catalog';
 import { parseClaudeSession } from '../src/adapters/claude/parser';
 import { buildSessionView } from '../src/adapters/claude/session';
-import type { NormalizedMessage } from '../src/types/prism';
+import type { NormalizedMessage } from '../src/types/reader';
 
 /**
  * The inventory measured across ~/.claude/projects on 2026-09-09: 3,286 files,

@@ -10,7 +10,7 @@ import type {
   FleetView,
   NormalizedConversation,
   SessionView
-} from '../types/prism';
+} from '../types/reader';
 
 export interface LoadedTextFile {
   /** Full path when the browser supplies one, so same-named files stay apart. */

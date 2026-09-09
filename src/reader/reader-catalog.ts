@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { CATALOG, typeNameOf } from '../adapters/claude/catalog';
-import type { LineClass, NormalizedConversation, NormalizedMessage } from '../types/prism';
+import type { LineClass, NormalizedConversation, NormalizedMessage } from '../types/reader';
 import { sharedStyles } from './styles';
 
 const toneOf = (name: LineClass): string => {

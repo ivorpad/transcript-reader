@@ -1,8 +1,8 @@
-export type PrismSource = 'claude-session';
+export type TranscriptSource = 'claude-session';
 
-export type PrismRole = 'user' | 'assistant' | 'system' | 'tool' | 'meta';
+export type MessageRole = 'user' | 'assistant' | 'system' | 'tool' | 'meta';
 
-export type PrismSeverity = 'info' | 'notice' | 'warning' | 'error';
+export type Severity = 'info' | 'notice' | 'warning' | 'error';
 
 /**
  * The five reading classes. Every line type has one, and the class is a
@@ -19,7 +19,7 @@ export type LineClass = 'read' | 'fold' | 'mark' | 'panel' | 'unknown';
 export type FoldDisposition = 'row' | 'panel' | 'own-row' | 'mark';
 
 /** Which agent, skill, plugin or MCP tool a turn is attributable to. */
-export interface PrismAttribution {
+export interface MessageAttribution {
   agent?: string;
   skill?: string;
   plugin?: string;
@@ -28,7 +28,7 @@ export interface PrismAttribution {
 }
 
 /** Why an assistant turn failed, refused or was cut short. */
-export interface PrismErrorInfo {
+export interface MessageErrorInfo {
   isApiError?: boolean;
   apiErrorStatus?: string;
   message?: string;
@@ -40,14 +40,14 @@ export interface PrismErrorInfo {
 }
 
 /** An image carried by a message, ready to put in an `<img src>`. */
-export interface PrismImage {
+export interface MessageImage {
   url: string;
   mediaType: string;
   /** Bytes of the decoded payload, when it came in as base64. */
   bytes?: number;
 }
 
-export type PrismChannel =
+export type MessageChannel =
   | 'message'
   | 'thinking'
   | 'tool_call'
@@ -98,8 +98,8 @@ export type ClaudeSessionLineType =
 
 export interface NormalizedMessage {
   id: string;
-  role: PrismRole;
-  channel: PrismChannel;
+  role: MessageRole;
+  channel: MessageChannel;
   text: string;
   timestamp: string | null;
   /** Zero-based position of the source line in the file. */
@@ -107,7 +107,7 @@ export interface NormalizedMessage {
   lineType?: ClaudeSessionLineType;
   /** What kind of non-conversational line this is, e.g. `attachment:hook_success`. */
   eventKind?: string;
-  severity?: PrismSeverity;
+  severity?: Severity;
   /** Reading class from the catalog. Decides whether the line draws a row. */
   lineClass?: LineClass;
   /** Where the line went when it drew no row of its own. */
@@ -125,7 +125,7 @@ export interface NormalizedMessage {
   /** For a folded line, the id of the row it was folded onto. */
   hostId?: string;
   /** Images carried by this message, kept out of `text` so no base64 is rendered. */
-  images?: PrismImage[];
+  images?: MessageImage[];
   /** Set when `text` was cut for rendering; holds the original length. */
   truncatedFrom?: number;
   /** The untruncated text, for an expand control. */
@@ -142,7 +142,7 @@ export interface NormalizedMessage {
    */
   thinkingTextStored?: boolean;
   /** Which agent, skill, plugin or MCP tool produced this assistant turn. */
-  attribution?: PrismAttribution;
+  attribution?: MessageAttribution;
   /** Reasoning effort recorded on the assistant line. */
   effort?: string;
   /** Team and agent identity, present once a session runs teammates. */
@@ -156,7 +156,7 @@ export interface NormalizedMessage {
   /** Present when the person interrupted the turn this line belongs to. */
   interruptedMessageId?: string;
   /** Assistant error state, when the turn did not complete normally. */
-  errorInfo?: PrismErrorInfo;
+  errorInfo?: MessageErrorInfo;
   uuid?: string;
   sessionId?: string | null;
   name?: string;
@@ -202,7 +202,7 @@ export interface ClaudeSessionCost {
 
 export interface NormalizedConversation {
   id: string;
-  source: PrismSource;
+  source: TranscriptSource;
   sessionId: string | null;
   title: string;
   startedAt: string | null;
@@ -340,7 +340,7 @@ export interface ReaderEntry {
   kind: ReaderEntryKind;
   turnIndex: number;
   lineClass: LineClass;
-  severity: PrismSeverity;
+  severity: Severity;
   message: NormalizedMessage | null;
   /** The tool result paired with a tool call. */
   result: NormalizedMessage | null;
@@ -356,7 +356,7 @@ export interface ReaderEntry {
   tag: string;
   sub: string;
   badge: string | null;
-  images: PrismImage[];
+  images: MessageImage[];
   diff: DiffLine[] | null;
   /** Lines of the diff that were not drawn, when it was cut. */
   diffOmitted: number;
@@ -433,7 +433,7 @@ export interface SessionBand {
   label: string;
   timeLabel: string;
   durationMs: number | null;
-  severity: PrismSeverity;
+  severity: Severity;
   hasAgents: boolean;
   marks: SessionBandMark[];
   entries: ReaderEntry[];

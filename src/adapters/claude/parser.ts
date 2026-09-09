@@ -16,13 +16,13 @@ import type {
   ClaudeSessionStats,
   NormalizedConversation,
   NormalizedMessage,
-  PrismAttribution,
-  PrismChannel,
-  PrismErrorInfo,
-  PrismImage,
-  PrismRole,
-  PrismSeverity
-} from '../../types/prism';
+  MessageAttribution,
+  MessageChannel,
+  MessageErrorInfo,
+  MessageImage,
+  MessageRole,
+  Severity
+} from '../../types/reader';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -266,8 +266,8 @@ const buildMessage = ({
   toolInput
 }: {
   id: string;
-  role: PrismRole;
-  channel: PrismChannel;
+  role: MessageRole;
+  channel: MessageChannel;
   text: string;
   timestamp: string | null;
   event: UnknownRecord;
@@ -276,8 +276,8 @@ const buildMessage = ({
   toolUseId?: string;
   toolUseResult?: unknown;
   eventKind?: string;
-  severity?: PrismSeverity;
-  images?: PrismImage[];
+  severity?: Severity;
+  images?: MessageImage[];
   toolCaller?: string;
   thinkingSignature?: string;
   thinkingTextStored?: boolean;
@@ -346,8 +346,8 @@ const asStringList = (value: unknown): string[] | undefined => {
 };
 
 /** Attribution fields Claude Code writes on assistant lines. */
-const getAttribution = (event: UnknownRecord): PrismAttribution | undefined => {
-  const attribution: PrismAttribution = {
+const getAttribution = (event: UnknownRecord): MessageAttribution | undefined => {
+  const attribution: MessageAttribution = {
     agent: asString(event.attributionAgent) ?? undefined,
     skill: asString(event.attributionSkill) ?? undefined,
     plugin: asString(event.attributionPlugin) ?? undefined,
@@ -359,10 +359,10 @@ const getAttribution = (event: UnknownRecord): PrismAttribution | undefined => {
 };
 
 /** Error, refusal and abort state on an assistant line. */
-const getErrorInfo = (event: UnknownRecord): PrismErrorInfo | undefined => {
+const getErrorInfo = (event: UnknownRecord): MessageErrorInfo | undefined => {
   const message = asRecord(event.message);
   const stopReason = asString(message?.stop_reason);
-  const info: PrismErrorInfo = {
+  const info: MessageErrorInfo = {
     isApiError: asBoolean(event.isApiErrorMessage),
     apiErrorStatus:
       asString(event.apiErrorStatus) ??
@@ -656,7 +656,7 @@ const parseUserMessageWithToolMap = (
     content.filter(isRecord).some(part => part.type === 'tool_result');
 
   if (topLevelToolResult !== undefined && !hasToolResultPart) {
-    const images: PrismImage[] = [];
+    const images: MessageImage[] = [];
     messages.push(
       buildMessage({
         id: getMessageId(event, index, 'top-level-tool-result'),

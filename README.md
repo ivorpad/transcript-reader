@@ -113,7 +113,7 @@ src/
 │   ├── events.ts              # one line of text per event kind
 │   ├── content.ts             # content blocks, images, tool input and results
 │   └── prompts.ts             # envelopes and the user lines nobody typed
-├── types/prism.ts             # shared types
+├── types/reader.ts            # shared types
 └── utils/                     # markdown, theme, icons
 tools/
 ├── audit-corpus.ts            # the 16 checks

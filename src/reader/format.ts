@@ -1,4 +1,4 @@
-import type { NormalizedMessage } from '../types/prism';
+import type { NormalizedMessage } from '../types/reader';
 
 export const clip = (text: string, max: number): string => {
   const flat = text.replace(/\s+/gu, ' ').trim();

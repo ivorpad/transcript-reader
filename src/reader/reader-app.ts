@@ -16,7 +16,7 @@ import type {
   ReaderEntry,
   SessionBand,
   SessionView
-} from '../types/prism';
+} from '../types/reader';
 import { applyTheme, initTheme } from '../utils/theme';
 import { clip, humanBytes, plural, shortId, shortModel, usd } from './format';
 import {

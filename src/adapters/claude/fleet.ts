@@ -5,7 +5,7 @@ import type {
   FleetView,
   ReaderEntry,
   SessionView
-} from '../../types/prism';
+} from '../../types/reader';
 
 type UnknownRecord = Record<string, unknown>;
 

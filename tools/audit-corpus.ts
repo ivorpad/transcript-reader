@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { classifyLine } from '../src/adapters/claude/catalog';
 import { parseClaudeSession } from '../src/adapters/claude/parser';
 import { buildSessionView } from '../src/adapters/claude/session';
-import type { NormalizedMessage } from '../src/types/prism';
+import type { NormalizedMessage } from '../src/types/reader';
 
 interface Check {
   id: string;

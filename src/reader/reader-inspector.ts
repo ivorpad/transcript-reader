@@ -1,7 +1,7 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import type { NormalizedMessage, ReaderEntry } from '../types/prism';
+import type { NormalizedMessage, ReaderEntry } from '../types/reader';
 import { safeRawJson, shortId } from './format';
 import { gapFields, inspectorFields } from './inspect';
 import { sharedStyles } from './styles';

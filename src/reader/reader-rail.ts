@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import type { SessionView } from '../types/prism';
+import type { SessionView } from '../types/reader';
 import { formatDuration } from '../adapters/claude/session';
 import { sharedStyles, type Edge } from './styles';
 

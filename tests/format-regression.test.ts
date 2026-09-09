@@ -9,7 +9,7 @@ import {
   parseClaudeSession
 } from '../src/adapters/claude/parser';
 import { buildSessionView } from '../src/adapters/claude/session';
-import type { NormalizedMessage } from '../src/types/prism';
+import type { NormalizedMessage } from '../src/types/reader';
 
 const FIXTURE_DIR = join(__dirname, 'fixtures', 'versions');
 
@@ -163,7 +163,7 @@ describe('format regression across Claude Code versions', () => {
       }
     }
 
-    // A type Prism has no summariser for shows up as `unknown:` or
+    // A type the parser has no summariser for shows up as `unknown:` or
     // `attachment:` with no entry, which is the signal to update the adapter.
     const unknown = [...eventKinds].filter(kind => kind.startsWith('unknown:'));
     expect(unknown).toEqual([]);

@@ -1,4 +1,4 @@
-import type { PrismSeverity } from '../../types/prism';
+import type { Severity } from '../../types/reader';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -56,7 +56,7 @@ const scalars = (record: UnknownRecord, skip: string[] = []): string => {
 
 export interface DescribedEvent {
   kind: string;
-  severity: PrismSeverity;
+  severity: Severity;
   label: string;
   text: string;
 }
@@ -185,7 +185,7 @@ const ATTACHMENT_SUMMARY: Record<string, (a: UnknownRecord) => string> = {
   session_context: () => 'session context'
 };
 
-const ATTACHMENT_SEVERITY: Record<string, PrismSeverity> = {
+const ATTACHMENT_SEVERITY: Record<string, Severity> = {
   hook_blocking_error: 'error',
   hook_non_blocking_error: 'warning',
   hook_cancelled: 'warning',
@@ -249,7 +249,7 @@ const SYSTEM_SUMMARY: Record<string, (event: UnknownRecord) => string> = {
     )
 };
 
-const SYSTEM_SEVERITY: Record<string, PrismSeverity> = {
+const SYSTEM_SEVERITY: Record<string, Severity> = {
   model_refusal_fallback: 'warning',
   model_refusal_no_fallback: 'error',
   model_consent_fallback: 'notice',
@@ -257,7 +257,7 @@ const SYSTEM_SEVERITY: Record<string, PrismSeverity> = {
   compact_boundary: 'notice'
 };
 
-const LEVEL_SEVERITY: Record<string, PrismSeverity> = {
+const LEVEL_SEVERITY: Record<string, Severity> = {
   warning: 'warning',
   error: 'error',
   notice: 'notice',
@@ -344,7 +344,7 @@ const LINE_SUMMARY: Record<string, (event: UnknownRecord) => string> = {
   'history-suppression': event => join('history suppressed', str(event.cause))
 };
 
-const LINE_SEVERITY: Record<string, PrismSeverity> = {
+const LINE_SEVERITY: Record<string, Severity> = {
   'history-suppression': 'notice',
   relocated: 'notice'
 };

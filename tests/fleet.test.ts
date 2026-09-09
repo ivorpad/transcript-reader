@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { buildFleet, fleetSummary, journalFromLines } from '../src/adapters/claude/fleet';
 import { parseClaudeSession } from '../src/adapters/claude/parser';
 import { buildSessionView } from '../src/adapters/claude/session';
-import type { ClaudeSessionParseResult } from '../src/types/prism';
+import type { ClaudeSessionParseResult } from '../src/types/reader';
 
 const t = (seconds: number) =>
   new Date(Date.parse('2026-09-09T10:00:00.000Z') + seconds * 1000).toISOString();

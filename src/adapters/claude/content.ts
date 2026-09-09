@@ -1,4 +1,4 @@
-import type { PrismImage } from '../../types/prism';
+import type { MessageImage } from '../../types/reader';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -13,7 +13,7 @@ export const MAX_ROW_CHARS = 50_000;
 
 export interface RenderedContent {
   text: string;
-  images: PrismImage[];
+  images: MessageImage[];
 }
 
 const base64Bytes = (data: string): number => Math.floor((data.length * 3) / 4);
@@ -22,7 +22,7 @@ const base64Bytes = (data: string): number => Math.floor((data.length * 3) / 4);
  * Turns an image or document block into something renderable. Upstream ran
  * these through JSON.stringify, which put megabytes of base64 into a `<pre>`.
  */
-export const toImage = (block: UnknownRecord): PrismImage | null => {
+export const toImage = (block: UnknownRecord): MessageImage | null => {
   const source = isRecord(block.source) ? block.source : null;
   if (!source) return null;
 
@@ -64,7 +64,7 @@ const modelOf = (value: unknown): string | null =>
  */
 const renderBlock = (
   block: UnknownRecord,
-  images: PrismImage[],
+  images: MessageImage[],
   options: { includeToolResults: boolean; includeThinking: boolean }
 ): string | null => {
   const type = str(block.type);
@@ -123,7 +123,7 @@ const renderBlock = (
 
 export const renderContent = (
   content: unknown,
-  images: PrismImage[],
+  images: MessageImage[],
   options: { includeToolResults?: boolean; includeThinking?: boolean } = {}
 ): string => {
   const resolved = {
@@ -146,7 +146,7 @@ export const renderToText = (
   content: unknown,
   options: { includeToolResults?: boolean; includeThinking?: boolean } = {}
 ): RenderedContent => {
-  const images: PrismImage[] = [];
+  const images: MessageImage[] = [];
   const text = renderContent(content, images, options);
   return { text, images };
 };
@@ -176,7 +176,7 @@ const clip = (value: string, max: number): string =>
  */
 export const describeToolUseResult = (
   result: unknown,
-  images: PrismImage[]
+  images: MessageImage[]
 ): string => {
   if (result === null || result === undefined) return '';
   if (typeof result === 'string') return result;

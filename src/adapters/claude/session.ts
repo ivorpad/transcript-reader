@@ -9,8 +9,8 @@ import type {
   LineClass,
   NormalizedConversation,
   NormalizedMessage,
-  PrismImage,
-  PrismSeverity,
+  MessageImage,
+  Severity,
   ReaderEntry,
   ReaderEntryKind,
   SessionBand,
@@ -27,7 +27,7 @@ import type {
   SessionTrouble,
   SessionTurn,
   SessionView
-} from '../../types/prism';
+} from '../../types/reader';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -49,9 +49,9 @@ export const LONG_SESSION_ROWS = 400;
 /** Below this many lines the rail, the filter bar and the docked inspector are withheld. */
 export const SMALL_SESSION_LINES = 40;
 
-const SEVERITY_ORDER: PrismSeverity[] = ['info', 'notice', 'warning', 'error'];
+const SEVERITY_ORDER: Severity[] = ['info', 'notice', 'warning', 'error'];
 
-const worse = (left: PrismSeverity, right: PrismSeverity): PrismSeverity =>
+const worse = (left: Severity, right: Severity): Severity =>
   SEVERITY_ORDER.indexOf(right) > SEVERITY_ORDER.indexOf(left) ? right : left;
 
 // ---------------------------------------------------------------------------
@@ -629,8 +629,8 @@ const buildEntries = (
 // Bands: one per turn for a long session
 // ---------------------------------------------------------------------------
 
-const worstOf = (entries: ReaderEntry[]): PrismSeverity =>
-  entries.reduce<PrismSeverity>((acc, entry) => worse(acc, entry.severity), 'info');
+const worstOf = (entries: ReaderEntry[]): Severity =>
+  entries.reduce<Severity>((acc, entry) => worse(acc, entry.severity), 'info');
 
 const turnSummary = (entries: ReaderEntry[]): string => {
   const said = entries.find(
@@ -1103,6 +1103,6 @@ export const buildSessionView = (
 };
 
 /** The images a row can decode, for a renderer that holds one at a time. */
-export const entryImages = (entry: ReaderEntry): PrismImage[] => entry.images;
+export const entryImages = (entry: ReaderEntry): MessageImage[] => entry.images;
 
 export type { SessionPanels };
