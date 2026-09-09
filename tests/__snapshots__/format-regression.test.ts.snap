@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`format regression across Claude Code versions > the shape of the corpus has not changed > event kinds 1`] = `
+[
+  "attachment:agent_listing_delta",
+  "attachment:async_hook_response",
+  "attachment:auto_mode",
+  "attachment:bash_output_audience_note",
+  "attachment:batching_reminder_sent",
+  "attachment:command_permissions",
+  "attachment:date_change",
+  "attachment:deferred_tools_delta",
+  "attachment:edited_text_file",
+  "attachment:hook_additional_context",
+  "attachment:hook_non_blocking_error",
+  "attachment:hook_success",
+  "attachment:hook_system_message",
+  "attachment:mcp_instructions_delta",
+  "attachment:nested_memory",
+  "attachment:output_style",
+  "attachment:plan_mode",
+  "attachment:queued_command",
+  "attachment:read_truncation_notice",
+  "attachment:remote_session_change",
+  "attachment:silent_turn_reminder",
+  "attachment:skill_listing",
+  "attachment:structured_output",
+  "attachment:task_reminder",
+  "attachment:total_tokens_reminder",
+  "content:fallback",
+  "system:away_summary",
+  "system:informational",
+  "system:local_command",
+  "system:model_refusal_fallback",
+  "system:scheduled_task_fire",
+  "system:stop_hook_summary",
+  "system:turn_duration",
+]
+`;
+
+exports[`format regression across Claude Code versions > the shape of the corpus has not changed > line types 1`] = `
+[
+  "assistant",
+  "attachment",
+  "system",
+  "user",
+]
+`;

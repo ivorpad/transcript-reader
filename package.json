@@ -1,5 +1,5 @@
 {
-  "name": "prism",
+  "name": "transcript-reader",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "audit": "bun tools/audit-corpus.ts",
+    "typecheck": "tsc --noEmit && tsc -p tools --noEmit",
+    "fixtures": "bun tools/build-fixtures.ts"
   },
   "dependencies": {
     "dompurify": "^3.4.1",
@@ -17,6 +20,7 @@
     "marked": "^18.0.2"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.0",
     "jsdom": "^29.0.2",
     "typescript": "~6.0.2",
     "vite": "^8.0.9",

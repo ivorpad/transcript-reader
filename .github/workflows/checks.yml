@@ -1,0 +1,36 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck app and tooling
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # The corpus audit needs a real ~/.claude/projects tree, which CI has no
+      # access to. The version fixtures under tests/fixtures/versions carry the
+      # same checks in redacted form and run as part of the suite above; run
+      # `npm run audit` locally against your own sessions before a release.
+      - name: Build
+        run: npm run build

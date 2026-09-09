@@ -1,173 +1,102 @@
 :root {
   color-scheme: light;
 
-  /* Color tokens — Clinical baseline (matches Direction A) */
-  --gray-50: hsl(0, 0%, 98%);
-  --gray-100: hsl(0, 0%, 96%);
-  --gray-200: hsl(0, 0%, 92%);
-  --gray-300: hsl(0, 0%, 88%);
-  --gray-400: hsl(0, 0%, 74%);
-  --gray-500: hsl(0, 0%, 56%);
-  --gray-600: hsl(0, 0%, 43%);
-  --gray-700: hsl(0, 0%, 36%);
-  --gray-800: hsl(0, 0%, 23%);
-  --gray-900: hsl(0, 0%, 14%);
+  /* Paper. The reader is a page, not a dashboard. */
+  --paper: #f7f6f3;
+  --paper-raised: #fffefc;
+  --paper-sunken: #f4f2ec;
+  --paper-rail: #fbfaf7;
+  --paper-hover: #fdfcfa;
+  --paper-selected: #f4f2ec;
 
-  --green-700: hsl(122, 43%, 39%);
-  --green-50: hsl(122, 43%, 96%);
+  --line: #e5e2db;
+  --line-soft: #f2efe8;
+  --line-faint: #f0ede6;
 
-  --purple-700: hsl(282, 68%, 38%);
-  --purple-50: hsl(282, 68%, 97%);
+  --ink: #1c1b18;
+  --ink-2: #3a3830;
+  --ink-3: #6b6862;
+  --ink-4: #98948c;
+  --ink-5: #c2beb5;
 
-  --blue-700: hsl(209, 79%, 46%);
-  --blue-50: hsl(205, 87%, 94%);
+  /* One hue per meaning: you, claude's agents, tools, trouble, marks. */
+  --blue: oklch(0.52 0.12 250);
+  --violet: oklch(0.5 0.12 300);
+  --green: oklch(0.5 0.12 150);
+  --red: oklch(0.52 0.16 25);
+  --amber: oklch(0.5 0.1 75);
+  --grey: #c2beb5;
 
-  --danger: hsl(0, 58%, 50%);
-  --danger-soft: hsl(0, 58%, 96%);
+  --blue-soft: #eaf0f9;
+  --violet-soft: #efeaf9;
+  --violet-paper: #fbfaff;
+  --violet-line: #ded9ea;
+  --green-soft: #eef6ef;
+  --green-line: #cfd9cd;
+  --red-soft: #fbeeea;
+  --red-line: #f0d9d2;
+  --amber-soft: #fdfbf6;
+  --amber-line: #d8c9a8;
+  --amber-paper: #fdfaf1;
 
-  /* Semantic tokens */
-  --surface-base: #ffffff;
-  --surface-raised: var(--gray-50);
-  --surface-overlay: #ffffff;
-  --surface-sunken: var(--gray-100);
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  --border-subtle: var(--gray-200);
-  --border-strong: var(--gray-300);
+  --diff-add: #eef6ef;
+  --diff-del: #fbeeea;
 
-  --text-1: var(--gray-900);
-  --text-2: var(--gray-700);
-  --text-3: var(--gray-500);
-  --text-4: var(--gray-400);
-
-  --accent: var(--blue-700);
-  --accent-soft: var(--blue-50);
-  --role-user: var(--blue-700);
-  --role-user-bg: var(--blue-50);
-  --role-asst: var(--purple-700);
-  --role-asst-bg: var(--purple-50);
-  --role-tool-res: var(--green-700);
-  --role-tool-res-bg: var(--green-50);
-  --role-tool-call: hsl(35, 84%, 42%);
-  --role-tool-call-bg: hsl(35, 84%, 96%);
-
-  --shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --focus-ring: var(--blue-700);
-
-  /* Dark-variant preview swatches for the theme picker.
-     Keep in sync with the [data-dark-variant] blocks below. */
-  --theme-slate-base: hsl(220, 13%, 9%);
-  --theme-slate-raised: hsl(220, 11%, 13%);
-  --theme-slate-text: hsl(220, 14%, 96%);
-  --theme-slate-accent: hsl(209, 85%, 66%);
-  --theme-warm-base: hsl(30, 6%, 10%);
-  --theme-warm-raised: hsl(30, 5%, 14%);
-  --theme-warm-text: hsl(35, 18%, 92%);
-  --theme-warm-accent: hsl(28, 75%, 62%);
-
-  /* Layout tokens */
-  --radius: 8px;
-  --shell-max-width: 1100px;
-  --header-height: 48px;
-
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    system-ui,
-    sans-serif;
-  font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: 14px;
   line-height: 1.5;
-  background-color: var(--surface-base);
-  color: var(--text-2);
+  color: var(--ink);
+  background: var(--paper);
 }
 
-:root[data-theme='dark'],
-:root[data-theme='dark'][data-dark-variant='slate'] {
+:root[data-theme='dark'] {
   color-scheme: dark;
 
-  --gray-50: hsl(220, 13%, 9%);
-  --gray-100: hsl(220, 11%, 13%);
-  --gray-200: hsl(220, 9%, 20%);
-  --gray-300: hsl(220, 8%, 28%);
-  --gray-400: hsl(220, 6%, 42%);
-  --gray-500: hsl(220, 8%, 58%);
-  --gray-600: hsl(220, 10%, 70%);
-  --gray-700: hsl(220, 10%, 76%);
-  --gray-800: hsl(220, 12%, 88%);
-  --gray-900: hsl(220, 14%, 96%);
+  --paper: #191814;
+  --paper-raised: #1f1e19;
+  --paper-sunken: #14130f;
+  --paper-rail: #1c1b16;
+  --paper-hover: #23221c;
+  --paper-selected: #262520;
 
-  --surface-base: hsl(220, 13%, 9%);
-  --surface-raised: hsl(220, 11%, 13%);
-  --surface-overlay: hsl(220, 10%, 16%);
-  --surface-sunken: hsl(220, 14%, 7%);
+  --line: #302e27;
+  --line-soft: #27251f;
+  --line-faint: #2a2822;
 
-  --border-subtle: hsl(220, 9%, 20%);
-  --border-strong: hsl(220, 8%, 28%);
+  --ink: #ece9e1;
+  --ink-2: #d4d0c6;
+  --ink-3: #a19d93;
+  --ink-4: #7a776e;
+  --ink-5: #55534c;
 
-  --blue-700: hsl(209, 85%, 66%);
-  --blue-50: hsl(209, 50%, 20%);
-  --green-700: hsl(142, 55%, 60%);
-  --green-50: hsl(142, 40%, 16%);
-  --purple-700: hsl(272, 70%, 74%);
-  --purple-50: hsl(272, 45%, 20%);
+  --blue: oklch(0.74 0.11 250);
+  --violet: oklch(0.74 0.11 300);
+  --green: oklch(0.72 0.11 150);
+  --red: oklch(0.72 0.14 25);
+  --amber: oklch(0.74 0.1 75);
+  --grey: #55534c;
 
-  --role-tool-call: hsl(38, 92%, 64%);
-  --role-tool-call-bg: hsl(38, 50%, 18%);
-  --danger: hsl(2, 72%, 68%);
-  --danger-soft: hsl(2, 45%, 18%);
+  --blue-soft: #1f2734;
+  --violet-soft: #2a2437;
+  --violet-paper: #201d29;
+  --violet-line: #3b3450;
+  --green-soft: #1e2a20;
+  --green-line: #2f4633;
+  --red-soft: #33211f;
+  --red-line: #4d2f2b;
+  --amber-soft: #2a2519;
+  --amber-line: #5a4b2a;
+  --amber-paper: #262115;
 
-  --shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.5),
-    0 12px 32px rgba(0, 0, 0, 0.55);
-  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.45);
-}
-
-:root[data-theme='dark'][data-dark-variant='warm'] {
-  color-scheme: dark;
-
-  --gray-50: hsl(30, 6%, 10%);
-  --gray-100: hsl(30, 5%, 14%);
-  --gray-200: hsl(30, 5%, 21%);
-  --gray-300: hsl(30, 4%, 30%);
-  --gray-400: hsl(30, 6%, 40%);
-  --gray-500: hsl(30, 7%, 55%);
-  --gray-600: hsl(30, 9%, 65%);
-  --gray-700: hsl(30, 10%, 72%);
-  --gray-800: hsl(32, 14%, 84%);
-  --gray-900: hsl(35, 18%, 92%);
-
-  --surface-base: hsl(30, 6%, 10%);
-  --surface-raised: hsl(30, 5%, 14%);
-  --surface-overlay: hsl(30, 5%, 17%);
-  --surface-sunken: hsl(30, 7%, 8%);
-
-  --border-subtle: hsl(30, 5%, 21%);
-  --border-strong: hsl(30, 4%, 30%);
-
-  --blue-700: hsl(28, 75%, 62%);
-  --blue-50: hsl(28, 40%, 20%);
-  --green-700: hsl(138, 38%, 58%);
-  --green-50: hsl(138, 28%, 16%);
-  --purple-700: hsl(295, 40%, 68%);
-  --purple-50: hsl(295, 25%, 20%);
-
-  --role-tool-call: hsl(42, 80%, 62%);
-  --role-tool-call-bg: hsl(42, 40%, 18%);
-  --danger: hsl(4, 62%, 66%);
-  --danger-soft: hsl(4, 34%, 18%);
-
-  --shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.4),
-    0 12px 28px rgba(0, 0, 0, 0.45);
-  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --diff-add: #1e2a20;
+  --diff-del: #33211f;
 }
 
 html,
 body {
-  position: relative;
-  width: 100%;
   height: 100%;
   margin: 0;
 }
@@ -179,21 +108,33 @@ body {
 }
 
 body {
-  margin: 0;
   min-width: 320px;
-  background-color: var(--surface-base);
-  color: var(--text-2);
+  background: var(--paper);
+  color: var(--ink);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-button {
-  font-family: inherit;
+a {
+  color: var(--blue);
+  text-decoration: none;
 }
 
-code,
-pre {
-  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: oklch(0.9 0.05 250);
+}
+
+:root[data-theme='dark'] ::selection {
+  background: oklch(0.4 0.08 250);
+}
+
+transcript-reader {
+  display: block;
+  height: 100%;
 }

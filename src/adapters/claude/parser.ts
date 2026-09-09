@@ -1,42 +1,93 @@
+import { foldByClass } from './collapse';
+import {
+  describeToolInput,
+  describeToolUseResult,
+  renderToText,
+  toImage,
+  truncateForRow
+} from './content';
+import { describeEvent } from './events';
+import { stripPromptEnvelopes } from './prompts';
 import type {
   ClaudeMetaSummary,
+  ClaudeSessionCost,
   ClaudeSessionLineType,
   ClaudeSessionParseResult,
   ClaudeSessionStats,
   NormalizedConversation,
   NormalizedMessage,
+  PrismAttribution,
   PrismChannel,
-  PrismRole
+  PrismErrorInfo,
+  PrismImage,
+  PrismRole,
+  PrismSeverity
 } from '../../types/prism';
 
 type UnknownRecord = Record<string, unknown>;
 
-const CLAUDE_TOP_LEVEL_TYPES = new Set([
-  'user',
-  'assistant',
-  'summary',
-  'attachment',
-  'system',
-  'file-history-snapshot',
-  'queue-operation',
-  'progress',
-  'permission-mode',
-  'last-prompt',
-  'custom-title',
-  'ai-title',
-  'tag',
+/**
+ * Line types Claude Code is known to write, as observed across a 3.2 GB
+ * ~/.claude/projects corpus (3,281 files, 995,835 lines, versions 2.1.197
+ * through 2.1.259).
+ *
+ * Membership does not gate parsing. `isClaudeEvent` accepts any object carrying
+ * a string `type`, so a line type introduced after this list was written still
+ * renders instead of becoming a warning — which is how the previous allowlist
+ * silently dropped 28,196 lines. The set only decides whether a file with no
+ * user or assistant lines is recognisable as a Claude session at all.
+ */
+const CLAUDE_KNOWN_LINE_TYPES = new Set([
   'agent-name',
-  'agent-color',
   'agent-setting',
+  'ai-title',
+  'artifact-autoreact-ledger',
+  'artifact-comment-monitor',
+  'assistant',
+  'atis-latch',
+  'attachment',
+  'bridge-session',
+  'cost-state',
+  'custom-title',
+  'file-history-delta',
+  'file-history-snapshot',
+  'fork-context-ref',
+  'frame-link',
+  'history-suppression',
+  'last-prompt',
   'mode',
-  'worktree-state',
+  'permission-mode',
   'pr-link',
+  'queue-operation',
+  'relocated',
+  'result',
+  'started',
+  'system',
+  'user',
+  'worktree-state'
+]);
+
+/**
+ * Types the upstream parser listed that match nothing in the current corpus.
+ * `summary` is the consequential one: sessions now carry `ai-title` and
+ * `custom-title` instead, which is why titles regressed. `turn_duration` moved
+ * to a `system` subtype. Kept only so historical transcripts still identify as
+ * Claude sessions.
+ */
+const CLAUDE_LEGACY_LINE_TYPES = new Set([
+  'agent-color',
   'attribution-snapshot',
   'content-replacement',
   'marble-origami-commit',
   'marble-origami-snapshot',
+  'progress',
+  'summary',
+  'tag',
   'turn_duration'
 ]);
+
+export const isKnownClaudeLineType = (type: string): boolean =>
+  CLAUDE_KNOWN_LINE_TYPES.has(type) || CLAUDE_LEGACY_LINE_TYPES.has(type);
 
 const isRecord = (value: unknown): value is UnknownRecord =>
   typeof value === 'object' && value !== null;
@@ -83,7 +134,7 @@ const isClaudeEvent = (value: unknown): value is UnknownRecord => {
   }
 
   const type = asString(record.type);
-  if (!type || !CLAUDE_TOP_LEVEL_TYPES.has(type)) {
+  if (!type) {
     return false;
   }
 
@@ -116,24 +167,67 @@ const getStartedAt = (events: UnknownRecord[]): string | null => {
   return null;
 };
 
+const firstLine = (text: string): string =>
+  text.split('\n')[0].slice(0, 80).trim();
+
+/**
+ * Sessions no longer carry `summary` lines — zero in 995,835 — so the upstream
+ * order resolved every title through the first user message, which is usually a
+ * slash-command envelope. `custom-title` and `ai-title` are what Claude Code
+ * writes now, and 304 sessions had one sitting unread.
+ */
 const getTitle = (events: UnknownRecord[], sessionId: string | null): string => {
+  const lastOf = (type: string, field: string): string | null => {
+    for (let at = events.length - 1; at >= 0; at--) {
+      if (events[at].type !== type) continue;
+      const value = asString(events[at][field])?.trim();
+      if (value) return value;
+    }
+    return null;
+  };
+
+  const customTitle = lastOf('custom-title', 'customTitle');
+  if (customTitle) {
+    return firstLine(customTitle);
+  }
+
+  const aiTitle = lastOf('ai-title', 'aiTitle');
+  if (aiTitle) {
+    return firstLine(aiTitle);
+  }
+
+  // Legacy transcripts only.
   const summary = events.find(event => event.type === 'summary');
   const summaryText = asString(summary?.summary)?.trim();
   if (summaryText) {
-    return summaryText.split('\n')[0].slice(0, 80);
+    return firstLine(summaryText);
   }
 
-  const firstUserMessage = events.find(
-    event => event.type === 'user' && !event.isMeta && !event.isCompactSummary
-  );
-  const message = asRecord(firstUserMessage?.message);
-  const text = extractTextFromContent(message?.content, {
-    includeToolResults: false,
-    includeThinking: false
-  }).trim();
+  for (const event of events) {
+    if (event.type !== 'user' || event.isMeta || event.isCompactSummary) {
+      continue;
+    }
 
-  if (text) {
-    return text.split('\n')[0].slice(0, 80);
+    const message = asRecord(event.message);
+    const raw = extractTextFromContent(message?.content, {
+      includeToolResults: false,
+      includeThinking: false
+    });
+    const text = stripPromptEnvelopes(raw);
+    if (text) {
+      return firstLine(text);
+    }
+  }
+
+  const agentIds = new Set(
+    events
+      .filter(event => event.type === 'started' || event.type === 'result')
+      .map(event => asString(event.agentId))
+      .filter((id): id is string => Boolean(id))
+  );
+  if (agentIds.size > 0) {
+    const results = events.filter(event => event.type === 'result').length;
+    return `Workflow run · ${agentIds.size} agents · ${results} results`;
   }
 
   if (sessionId) {
@@ -149,56 +243,7 @@ const extractTextFromContent = (
     includeToolResults?: boolean;
     includeThinking?: boolean;
   } = {}
-): string => {
-  const includeToolResults = options.includeToolResults ?? true;
-  const includeThinking = options.includeThinking ?? true;
-
-  if (typeof content === 'string') {
-    return content;
-  }
-
-  if (!Array.isArray(content)) {
-    return '';
-  }
-
-  return content
-    .map(part => {
-      if (!isRecord(part)) {
-        return '';
-      }
-
-      if (part.type === 'tool_result' && !includeToolResults) {
-        return '';
-      }
-
-      if (
-        (part.type === 'thinking' || part.type === 'redacted_thinking') &&
-        !includeThinking
-      ) {
-        return '';
-      }
-
-      if (typeof part.text === 'string') {
-        return part.text;
-      }
-
-      if (typeof part.content === 'string') {
-        return part.content;
-      }
-
-      if (typeof part.thinking === 'string') {
-        return part.thinking;
-      }
-
-      if (part.type === 'redacted_thinking' && typeof part.data === 'string') {
-        return part.data;
-      }
-
-      return '';
-    })
-    .filter(Boolean)
-    .join('\n');
-};
+): string => renderToText(content, options).text;
 
 const buildMessage = ({
   id,
@@ -210,7 +255,15 @@ const buildMessage = ({
   name,
   recipient,
   toolUseId,
-  toolUseResult
+  toolUseResult,
+  eventKind,
+  severity,
+  images,
+  toolCaller,
+  thinkingSignature,
+  thinkingTextStored,
+  lineIndex,
+  toolInput
 }: {
   id: string;
   role: PrismRole;
@@ -222,15 +275,40 @@ const buildMessage = ({
   recipient?: string;
   toolUseId?: string;
   toolUseResult?: unknown;
+  eventKind?: string;
+  severity?: PrismSeverity;
+  images?: PrismImage[];
+  toolCaller?: string;
+  thinkingSignature?: string;
+  thinkingTextStored?: boolean;
+  lineIndex: number;
+  toolInput?: unknown;
 }): NormalizedMessage => ({
   id,
   role,
   channel,
-  text,
+  lineIndex,
+  ...truncateForRow(text),
+  toolInput,
+  images: images && images.length > 0 ? images : undefined,
+  toolCaller,
+  thinkingSignature,
+  thinkingTextStored,
+  attribution: getAttribution(event),
+  effort: asString(event.effort) ?? undefined,
+  agentName: asString(event.agentName) ?? undefined,
+  teamName: asString(event.teamName) ?? undefined,
+  promptSource: asString(event.promptSource) ?? undefined,
+  promptId: asString(event.promptId) ?? undefined,
+  toolDenialKind: asString(event.toolDenialKind) ?? undefined,
+  interruptedMessageId: asString(event.interruptedMessageId) ?? undefined,
+  errorInfo: getErrorInfo(event),
   timestamp,
   lineType: (asString(event.type) ?? undefined) as
     | ClaudeSessionLineType
     | undefined,
+  eventKind,
+  severity: severity ?? (getErrorInfo(event) ? 'error' : undefined),
   uuid: asString(event.uuid) ?? undefined,
   sessionId: asString(event.sessionId),
   name,
@@ -261,6 +339,87 @@ const getMessageId = (
   return uuid ? `${uuid}:${suffix}` : `${index}-${suffix}`;
 };
 
+const asStringList = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) return undefined;
+  const items = value.filter((item): item is string => typeof item === 'string');
+  return items.length ? items : undefined;
+};
+
+/** Attribution fields Claude Code writes on assistant lines. */
+const getAttribution = (event: UnknownRecord): PrismAttribution | undefined => {
+  const attribution: PrismAttribution = {
+    agent: asString(event.attributionAgent) ?? undefined,
+    skill: asString(event.attributionSkill) ?? undefined,
+    plugin: asString(event.attributionPlugin) ?? undefined,
+    mcpServer: asString(event.attributionMcpServer) ?? undefined,
+    mcpTool: asString(event.attributionMcpTool) ?? undefined
+  };
+
+  return Object.values(attribution).some(Boolean) ? attribution : undefined;
+};
+
+/** Error, refusal and abort state on an assistant line. */
+const getErrorInfo = (event: UnknownRecord): PrismErrorInfo | undefined => {
+  const message = asRecord(event.message);
+  const stopReason = asString(message?.stop_reason);
+  const info: PrismErrorInfo = {
+    isApiError: asBoolean(event.isApiErrorMessage),
+    apiErrorStatus:
+      asString(event.apiErrorStatus) ??
+      (typeof event.apiErrorStatus === 'number'
+        ? String(event.apiErrorStatus)
+        : undefined),
+    message: asString(event.error) ?? undefined,
+    details: event.errorDetails,
+    abortedMidStream: asBoolean(event.isAbortedMidStream),
+    stopReason: stopReason === 'refusal' ? stopReason : undefined,
+    quotaLimits: event.quotaLimits,
+    supersedes: asStringList(event.supersedesUuids)
+  };
+
+  return Object.values(info).some(value => value !== undefined)
+    ? info
+    : undefined;
+};
+
+const asNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null;
+
+/**
+ * Reads the session's own accounting off the last `cost-state` line. Claude Code
+ * rewrites it as the session grows, so the last one is the running total.
+ */
+const getSessionCost = (events: UnknownRecord[]): ClaudeSessionCost | null => {
+  let latest: UnknownRecord | null = null;
+  for (const event of events) {
+    if (event.type === 'cost-state') latest = event;
+  }
+  if (!latest) return null;
+
+  const usage = asRecord(latest.modelUsage) ?? {};
+  return {
+    totalCostUSD: asNumber(latest.totalCostUSD),
+    totalDurationMs: asNumber(latest.totalDuration),
+    totalApiDurationMs: asNumber(latest.totalAPIDuration),
+    totalToolDurationMs: asNumber(latest.totalToolDuration),
+    linesAdded: asNumber(latest.totalLinesAdded),
+    linesRemoved: asNumber(latest.totalLinesRemoved),
+    hasUnknownModelCost: Boolean(latest.hasUnknownModelCost),
+    modelUsage: Object.entries(usage).map(([model, raw]) => {
+      const stats = asRecord(raw) ?? {};
+      return {
+        model,
+        costUSD: asNumber(stats.costUSD),
+        inputTokens: asNumber(stats.inputTokens),
+        outputTokens: asNumber(stats.outputTokens),
+        cacheReadInputTokens: asNumber(stats.cacheReadInputTokens),
+        cacheCreationInputTokens: asNumber(stats.cacheCreationInputTokens),
+        webSearchRequests: asNumber(stats.webSearchRequests)
+      };
+    })
+  };
+};
+
 interface ToolUseInfo {
   name: string;
   assistantUuid?: string;
@@ -288,25 +447,21 @@ const parseAssistantMessage = (
   const timestamp = asString(event.timestamp);
   const messages: NormalizedMessage[] = [];
 
-  const visibleText = content
-    .filter(isRecord)
-    .map(part => {
-      if (part.type === 'thinking' || part.type === 'redacted_thinking') {
-        return '';
-      }
+  // Blocks that get a row of their own, so they must not also land in the
+  // assistant's visible text.
+  const OWN_ROW = new Set([
+    'thinking',
+    'redacted_thinking',
+    'tool_use',
+    'server_tool_use',
+    'image',
+    'fallback',
+    'web_search_tool_result'
+  ]);
 
-      if (part.type === 'tool_use' || part.type === 'server_tool_use') {
-        return '';
-      }
-
-      if (typeof part.text === 'string') {
-        return part.text;
-      }
-
-      return '';
-    })
-    .filter(Boolean)
-    .join('\n');
+  const visibleText = renderToText(
+    content.filter(isRecord).filter(part => !OWN_ROW.has(asString(part.type) ?? ''))
+  ).text;
 
   if (visibleText) {
     messages.push(
@@ -316,26 +471,33 @@ const parseAssistantMessage = (
         channel: 'message',
         text: visibleText,
         timestamp,
-        event
+        event,
+        lineIndex: index
       })
     );
   }
 
   content.filter(isRecord).forEach((part, partIndex) => {
     if (part.type === 'thinking' || part.type === 'redacted_thinking') {
+      const thinkingText =
+        typeof part.thinking === 'string' && part.thinking.trim() !== ''
+          ? part.thinking
+          : null;
       messages.push(
         buildMessage({
           id: getMessageId(event, index, `thinking-${partIndex}`),
           role: 'assistant',
           channel: 'thinking',
           text:
-            typeof part.thinking === 'string' && part.thinking.trim() !== ''
-              ? part.thinking
-              : typeof part.data === 'string' && part.data.trim() !== ''
-                ? part.data
-                : '[thinking redacted or empty]',
+            thinkingText ??
+            (part.type === 'redacted_thinking'
+              ? '[thinking redacted]'
+              : '[thinking text not stored]'),
           timestamp,
-          event
+          event,
+          lineIndex: index,
+          thinkingSignature: asString(part.signature) ?? undefined,
+          thinkingTextStored: thinkingText !== null
         })
       );
     }
@@ -348,45 +510,70 @@ const parseAssistantMessage = (
           id: getMessageId(event, index, `tool-call-${partIndex}`),
           role: 'tool',
           channel: 'tool_call',
-          text: stringify({
-            id: part.id,
-            name: part.name,
-            input: part.input
-          }),
+          text: describeToolInput(toolName, part.input),
           timestamp,
           event,
+          lineIndex: index,
           name: toolName,
           recipient: toolName,
-          toolUseId
+          toolUseId,
+          toolInput: part.input,
+          toolCaller:
+            asString(asRecord(part.caller)?.type) ??
+            asString(part.caller) ??
+            undefined
         })
       );
     }
 
     if (part.type === 'web_search_tool_result') {
+      const rendered = renderToText(part.content);
       messages.push(
         buildMessage({
           id: getMessageId(event, index, `tool-result-${partIndex}`),
           role: 'tool',
           channel: 'tool_result',
-          text: stringify(part),
+          text: rendered.text || describeToolUseResult(part, rendered.images),
           timestamp,
           event,
+          lineIndex: index,
           name: 'web_search_tool_result',
-          recipient: 'web_search'
+          recipient: 'web_search',
+          images: rendered.images
         })
       );
     }
 
     if (part.type === 'image') {
+      const image = toImage(part);
       messages.push(
         buildMessage({
           id: getMessageId(event, index, `image-${partIndex}`),
           role: 'assistant',
-          channel: 'event',
-          text: stringify(part),
+          channel: 'message',
+          text: image ? `[image ${image.mediaType}]` : '[image]',
           timestamp,
           event,
-          name: 'image'
+          lineIndex: index,
+          name: 'image',
+          images: image ? [image] : undefined
+        })
+      );
+    }
+
+    if (part.type === 'fallback') {
+      messages.push(
+        buildMessage({
+          id: getMessageId(event, index, `fallback-${partIndex}`),
+          role: 'system',
+          channel: 'event',
+          text: renderToText([part]).text,
+          timestamp,
+          event,
+          lineIndex: index,
+          name: 'model_fallback',
+          eventKind: 'content:fallback',
+          severity: 'notice'
         })
       );
     }
@@ -417,7 +604,8 @@ const parseUserMessageWithToolMap = (
         channel: 'message',
         text: directText,
         timestamp,
-        event
+        event,
+        lineIndex: index
       })
     );
   }
@@ -434,18 +622,26 @@ const parseUserMessageWithToolMap = (
           toolInfo?.name ??
           asString(asRecord(topLevelToolResult)?.type) ??
           toolUseId;
+        const rendered = renderToText(part.content);
+        const text =
+          rendered.text ||
+          describeToolUseResult(topLevelToolResult, rendered.images) ||
+          (part.is_error === true ? '[tool error, no output]' : '[no output]');
         messages.push(
           buildMessage({
             id: getMessageId(event, index, `tool-result-${partIndex}`),
             role: 'tool',
             channel: 'tool_result',
-            text: extractTextFromContent(part.content) || stringify(part.content),
+            text,
             timestamp,
             event,
+            lineIndex: index,
             name: toolName,
             recipient: toolName,
             toolUseId,
-            toolUseResult: topLevelToolResult
+            toolUseResult: topLevelToolResult,
+            images: rendered.images,
+            severity: part.is_error === true ? 'warning' : undefined
           })
         );
       }
@@ -460,17 +656,20 @@ const parseUserMessageWithToolMap = (
     content.filter(isRecord).some(part => part.type === 'tool_result');
 
   if (topLevelToolResult !== undefined && !hasToolResultPart) {
+    const images: PrismImage[] = [];
     messages.push(
       buildMessage({
         id: getMessageId(event, index, 'top-level-tool-result'),
         role: 'tool',
         channel: 'tool_result',
-        text: stringify(topLevelToolResult),
+        text: describeToolUseResult(topLevelToolResult, images) || '[no output]',
         timestamp,
         event,
+        lineIndex: index,
         name: asString(asRecord(topLevelToolResult)?.type) ?? undefined,
         recipient: asString(event.sourceToolAssistantUUID) ?? undefined,
-        toolUseResult: topLevelToolResult
+        toolUseResult: topLevelToolResult,
+        images
       })
     );
   }
@@ -511,12 +710,7 @@ const collectToolUseMap = (events: UnknownRecord[]): Map<string, ToolUseInfo> =>
 const parseEventRow = (event: UnknownRecord, index: number): NormalizedMessage => {
   const timestamp = asString(event.timestamp);
   const topLevelType = asString(event.type) ?? 'event';
-  const attachmentType = asString(asRecord(event.attachment)?.type);
-  const systemSubtype = asString(event.subtype);
-  const label =
-    attachmentType ??
-    systemSubtype ??
-    (topLevelType === 'summary' ? 'summary' : topLevelType);
+  const described = describeEvent(event);
   const summaryText = asString(event.summary);
 
   return buildMessage({
@@ -532,22 +726,13 @@ const parseEventRow = (event: UnknownRecord, index: number): NormalizedMessage =
         ? 'meta'
         : 'system',
     channel: 'event',
-    text: stringify({
-      type: topLevelType,
-      subtype: systemSubtype,
-      attachmentType,
-      summary:
-        summaryText ??
-        asString(event.content) ??
-        asString(event.lastPrompt) ??
-        asString(asRecord(event.attachment)?.stdout) ??
-        asString(asRecord(event.attachment)?.content) ??
-        asString(asRecord(event.snapshot)?.timestamp) ??
-        label
-    }),
+    text: described.text,
     timestamp,
     event,
-    name: label
+    lineIndex: index,
+    name: described.label,
+    eventKind: described.kind,
+    severity: described.severity
   });
 };
 
@@ -567,6 +752,7 @@ const parseUnsupportedLine = (
     channel: 'event',
     text: `Skipped unsupported or malformed line at index ${index}.\n\n${stringify(line)}`,
     timestamp: null,
+    lineIndex: index,
     event: {
       type: 'parse_warning',
       lineIndex: index,
@@ -807,32 +993,68 @@ export const isClaudeSessionJSONL = (rawLines: unknown[]): boolean => {
     return false;
   }
 
-  const matches = rawLines.filter(isClaudeEvent);
-  if (matches.length === 0) {
+  const events = rawLines.filter(isClaudeEvent);
+  if (events.length === 0) {
     return false;
   }
 
-  const ratio = matches.length / rawLines.length;
-  return ratio >= 0.6;
+  // A transcript is unambiguous as soon as it carries a turn.
+  if (events.some(event => event.type === 'user' || event.type === 'assistant')) {
+    return true;
+  }
+
+  // Otherwise every line has to be something Claude Code is known to write, or
+  // to carry session identity. Workflow journals under subagents/workflows are
+  // the case this exists for: they hold only `started` and `result` lines, and
+  // the old 60% ratio gate refused all 612 of them.
+  return events.every(event => {
+    const type = asString(event.type) ?? '';
+    return (
+      isKnownClaudeLineType(type) ||
+      typeof event.sessionId === 'string' ||
+      typeof event.uuid === 'string'
+    );
+  });
 };
 
-export const parseClaudeMeta = (json: unknown): ClaudeMetaSummary | null => {
+export const parseClaudeMeta = (
+  json: unknown,
+  fileName?: string
+): ClaudeMetaSummary | null => {
   const record = asRecord(json);
   if (!record) {
     return null;
   }
 
+  // `<agentId>.meta.json` sits next to `<agentId>.jsonl`; the id is the stem.
+  const agentIdFromFile = fileName
+    ? (/([^/\\]+?)(?:\.meta)?\.(?:json|jsonl)$/u.exec(fileName)?.[1] ?? null)
+    : null;
+
   return {
-    agentId: asString(record.agentId),
+    agentId: asString(record.agentId) ?? agentIdFromFile,
     agentType: asString(record.agentType),
     description: asString(record.description),
+    toolUseId: firstString(record.toolUseId, record.toolUseID) ?? null,
+    name: asString(record.name),
+    model: asString(record.model),
+    parentAgentId: asString(record.parentAgentId),
+    spawnDepth:
+      typeof record.spawnDepth === 'number' ? record.spawnDepth : null,
+    isFork: record.isFork === true,
+    spawnedWithWorktree: record.spawnedWithWorktree === true,
+    stoppedByUser: record.stoppedByUser === true,
+    worktreePath: asString(record.worktreePath),
+    worktreeBranch: asString(record.worktreeBranch),
+    inheritedWorktreePath: asString(record.inheritedWorktreePath),
     raw: record
   };
 };
 
 export const parseClaudeSession = (
   rawLines: unknown[],
-  meta?: unknown
+  meta?: unknown,
+  metaFileName?: string
 ): ClaudeSessionParseResult | null => {
   if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return null;
@@ -840,16 +1062,18 @@ export const parseClaudeSession = (
 
   const warnings: string[] = [];
   const events: UnknownRecord[] = [];
-  const dirtyMessages: NormalizedMessage[] = [];
+  const eventLineIndexes: number[] = [];
+  const malformed: NormalizedMessage[] = [];
 
   rawLines.forEach((line, index) => {
     if (isClaudeEvent(line)) {
       events.push(line);
+      eventLineIndexes.push(index);
       return;
     }
 
     warnings.push(`Skipped unsupported or malformed line at index ${index}.`);
-    dirtyMessages.push(parseUnsupportedLine(line, index));
+    malformed.push(parseUnsupportedLine(line, index));
   });
 
   if (!isClaudeSessionJSONL(events)) {
@@ -857,31 +1081,41 @@ export const parseClaudeSession = (
   }
 
   const toolUseMap = collectToolUseMap(events);
-  const messages: NormalizedMessage[] = [];
+  const drafted: NormalizedMessage[] = [];
 
-  events.forEach((event, index) => {
+  // Rows are drawn in write order. Sorting by timestamp put every line without
+  // one at the top and hid how far the file is from time order; the footer
+  // reports that distance instead: a line counts when its timestamp precedes
+  // the timestamped line written just before it. In the reference session that
+  // is 756 of 5,624, mostly hooks stamped at their start and written after the
+  // tool result they belong to.
+  let outOfOrderLines = 0;
+  let previousTime: number | null = null;
+
+  events.forEach((event, at) => {
+    const index = eventLineIndexes[at];
+    const time = asString(event.timestamp) ? Date.parse(asString(event.timestamp) as string) : NaN;
+    if (!Number.isNaN(time)) {
+      if (previousTime !== null && time < previousTime) outOfOrderLines++;
+      previousTime = time;
+    }
     switch (event.type) {
       case 'assistant':
-        messages.push(...parseAssistantMessage(event, index));
+        drafted.push(...parseAssistantMessage(event, index));
         break;
       case 'user':
-        messages.push(
+        drafted.push(
           ...parseUserMessageWithToolMap(event, index, toolUseMap)
         );
         break;
       default:
-        messages.push(parseEventRow(event, index));
+        drafted.push(parseEventRow(event, index));
         break;
     }
   });
 
-  messages.push(...dirtyMessages);
-
-  messages.sort((left, right) => {
-    const leftTime = left.timestamp ? Date.parse(left.timestamp) : 0;
-    const rightTime = right.timestamp ? Date.parse(right.timestamp) : 0;
-    return leftTime - rightTime;
-  });
+  const { rows, folded } = foldByClass(drafted);
+  const messages: NormalizedMessage[] = rows;
 
   const childrenByParentUuid = buildChildrenByParentUuid(events);
   const conversationChildrenByParentUuid = buildChildrenByParentUuid(events, {
@@ -930,7 +1164,7 @@ export const parseClaudeSession = (
   };
 
   const sessionId = getSessionId(events);
-  const metaSummary = meta ? parseClaudeMeta(meta) : null;
+  const metaSummary = meta ? parseClaudeMeta(meta, metaFileName) : null;
 
   const conversation: NormalizedConversation = {
     id: sessionId ?? `claude-session-${Date.now()}`,
@@ -938,7 +1172,11 @@ export const parseClaudeSession = (
     sessionId,
     title: getTitle(events, sessionId),
     startedAt: getStartedAt(events),
+    cost: getSessionCost(events),
     messages,
+    folded,
+    malformed,
+    outOfOrderLines,
     metadata: buildMetadata({
       events,
       messages,

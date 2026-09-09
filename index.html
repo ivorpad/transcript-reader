@@ -4,52 +4,39 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prism — Claude Session Viewer</title>
+    <title>Transcript Reader</title>
     <script>
       (function () {
+        var dark = false;
         try {
-          var storedMode = localStorage.getItem('prism-theme-mode');
-          var mode =
-            storedMode === 'light' ||
-            storedMode === 'dark' ||
-            storedMode === 'system'
-              ? storedMode
-              : 'system';
-          var storedVariant = localStorage.getItem('prism-theme-variant');
-          var variant = storedVariant === 'warm' ? 'warm' : 'slate';
-          var dark =
+          var stored = JSON.parse(
+            localStorage.getItem('transcript-reader-settings') || 'null'
+          );
+          var mode = stored && stored.theme ? stored.theme : 'system';
+          dark =
             mode === 'dark' ||
-            (mode === 'system' &&
+            (mode !== 'light' &&
               window.matchMedia('(prefers-color-scheme: dark)').matches);
-          var root = document.documentElement;
-          root.dataset.theme = dark ? 'dark' : 'light';
-          root.dataset.darkVariant = variant;
         } catch (error) {
-          var fallbackDark = false;
           try {
-            fallbackDark = window.matchMedia(
-              '(prefers-color-scheme: dark)'
-            ).matches;
+            dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           } catch (mediaError) {
             /* ignore */
           }
-          document.documentElement.dataset.theme = fallbackDark
-            ? 'dark'
-            : 'light';
-          document.documentElement.dataset.darkVariant = 'slate';
         }
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
       })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./src/index.css" />
-    <script type="module" src="./src/prism-app.ts"></script>
+    <script type="module" src="./src/reader/reader-app.ts"></script>
   </head>
   <body>
-    <prism-app></prism-app>
+    <transcript-reader></transcript-reader>
   </body>
 </html>
