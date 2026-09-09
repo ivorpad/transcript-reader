@@ -122,15 +122,16 @@ export class ReaderCatalog extends LitElement {
       }
 
       .h1 {
-        font-size: 16px;
-        font-weight: 600;
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        font-weight: 500;
         margin-bottom: 6px;
       }
 
       .lede {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.55;
-        color: var(--ink-2);
+        color: var(--ink);
         margin-bottom: 4px;
         max-width: 88ch;
       }
@@ -159,24 +160,26 @@ export class ReaderCatalog extends LitElement {
       .card-head.ink { background: var(--paper-sunken); }
 
       .name {
-        font-size: 11px;
-        font-weight: 600;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: var(--edge);
       }
 
       .rule {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.45;
-        color: var(--ink-2);
+        color: var(--ink);
         flex: 1 1 260px;
         min-width: 0;
       }
 
       .share {
-        font-size: 11px;
-        color: var(--ink-4);
+        font-size: 12px;
+        color: var(--ink-3);
         flex: 0 0 auto;
       }
 
@@ -185,7 +188,7 @@ export class ReaderCatalog extends LitElement {
       }
 
       .small {
-        font-size: 11px;
+        font-size: 12px;
         margin-bottom: 7px;
       }
 
@@ -214,9 +217,12 @@ export class ReaderCatalog extends LitElement {
       }
 
       .item {
+        display: inline-flex;
+        align-items: center;
+        height: var(--badge-height);
         font-size: 11px;
-        padding: 2px 6px;
-        border-radius: 3px;
+        padding: 0 6px;
+        border-radius: var(--badge-radius);
         border: 1px solid var(--line);
         background: var(--paper);
         color: var(--ink-3);

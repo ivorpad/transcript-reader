@@ -461,15 +461,15 @@ export class ReaderRow extends LitElement {
       }
 
       .time {
-        flex: 0 0 62px;
-        font-size: 10px;
-        color: var(--ink-4);
+        flex: 0 0 68px;
+        font-size: 11px;
+        color: var(--ink-3);
         padding-top: 2px;
         line-height: 1.5;
       }
 
       .dur {
-        color: var(--ink-5);
+        color: var(--ink-3);
       }
 
       .body {
@@ -487,10 +487,10 @@ export class ReaderRow extends LitElement {
       }
 
       .tag {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
         color: var(--edge);
       }
 
@@ -499,7 +499,7 @@ export class ReaderRow extends LitElement {
       }
 
       .sub {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
         min-width: 0;
         overflow: hidden;
@@ -508,7 +508,7 @@ export class ReaderRow extends LitElement {
       }
 
       .prose {
-        font-size: 14px;
+        font-size: var(--body-size);
         line-height: 1.5;
         white-space: pre-wrap;
         text-wrap: pretty;
@@ -562,7 +562,7 @@ export class ReaderRow extends LitElement {
       }
 
       .event {
-        font-size: 12px;
+        font-size: 12.5px;
         line-height: 1.5;
         color: var(--ink-3);
         white-space: pre-wrap;
@@ -571,7 +571,7 @@ export class ReaderRow extends LitElement {
       }
 
       .event.read {
-        color: var(--ink-2);
+        color: var(--ink);
         font-size: 13px;
       }
 
@@ -592,9 +592,9 @@ export class ReaderRow extends LitElement {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-top: 5px;
+        margin-top: 6px;
         flex-wrap: wrap;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
       }
 
@@ -615,21 +615,26 @@ export class ReaderRow extends LitElement {
 
       .fold {
         cursor: pointer;
-        padding: 1px 6px;
-        border-radius: 9px;
-        border: 1px solid var(--line);
-        background: var(--paper-raised);
-        color: var(--ink-3);
+        display: inline-flex;
+        align-items: center;
+        height: var(--badge-height);
+        padding: 0 6px;
+        border-radius: var(--badge-radius);
+        border: 0;
+        background: var(--badge-fill);
+        color: var(--badge-text);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
       }
 
       .fold.open {
-        border-color: var(--green-line);
-        background: var(--green-soft);
-        color: var(--green);
+        background: var(--badge-text);
+        color: #ffffff;
       }
 
       .fold.warn {
-        border-color: var(--amber-line);
+        background: var(--amber-soft);
         color: var(--amber);
       }
 
@@ -674,8 +679,9 @@ export class ReaderRow extends LitElement {
       .fold-line {
         display: flex;
         gap: 10px;
-        align-items: baseline;
-        padding: 5px 10px;
+        align-items: center;
+        min-height: var(--row-data);
+        padding: 4px 10px;
         border-top: 1px solid var(--line-soft);
         cursor: pointer;
       }
@@ -736,15 +742,17 @@ export class ReaderRow extends LitElement {
       }
 
       .agent-type {
-        font-size: 11px;
-        font-weight: 600;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
         color: var(--violet);
       }
 
       .agent-ask {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.45;
-        color: var(--ink-2);
+        color: var(--ink);
         max-width: 70ch;
       }
 
@@ -865,9 +873,9 @@ export class ReaderRow extends LitElement {
       }
 
       .unknown-note {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.45;
-        color: var(--ink-2);
+        color: var(--ink);
       }
 
       .unknown-body {

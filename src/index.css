@@ -13,11 +13,12 @@
   --line-soft: #f2efe8;
   --line-faint: #f0ede6;
 
-  --ink: #1c1b18;
-  --ink-2: #3a3830;
-  --ink-3: #6b6862;
-  --ink-4: #98948c;
-  --ink-5: #c2beb5;
+  /* Text: one default and one subtle level, both kept readable. */
+  --ink: #333333;
+  --ink-2: #333333;
+  --ink-3: #777777;
+  --ink-4: #777777;
+  --ink-5: #777777;
 
   /* One hue per meaning: you, claude's agents, tools, trouble, marks. */
   --blue: oklch(0.52 0.12 250);
@@ -39,14 +40,34 @@
   --amber-line: #d8c9a8;
   --amber-paper: #fdfaf1;
 
-  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Badges and switches. */
+  --badge-fill: #caface;
+  --badge-text: #15b042;
+  --badge-height: 20px;
+  --badge-radius: 6px;
+  --switch-track: #0077e6;
+  --switch-off: #c2beb5;
+
+  /* Type. */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --title-size: 16px;
+  --title-line: 20px;
+  --label-size: 13px;
+  --label-line: 16px;
+  --body-size: 14px;
+
+  /* Controls and rows. */
+  --button-height: 32px;
+  --button-radius: 10px;
+  --row-data: 40px;
+  --row-list: 44px;
 
   --diff-add: #eef6ef;
   --diff-del: #fbeeea;
 
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--body-size);
   line-height: 1.5;
   color: var(--ink);
   background: var(--paper);
@@ -67,10 +88,10 @@
   --line-faint: #2a2822;
 
   --ink: #ece9e1;
-  --ink-2: #d4d0c6;
-  --ink-3: #a19d93;
-  --ink-4: #7a776e;
-  --ink-5: #55534c;
+  --ink-2: #ece9e1;
+  --ink-3: #a5a29a;
+  --ink-4: #a5a29a;
+  --ink-5: #a5a29a;
 
   --blue: oklch(0.74 0.11 250);
   --violet: oklch(0.74 0.11 300);
@@ -90,6 +111,10 @@
   --amber-soft: #2a2519;
   --amber-line: #5a4b2a;
   --amber-paper: #262115;
+
+  --badge-fill: #163d21;
+  --badge-text: #5fd27a;
+  --switch-off: #55534c;
 
   --diff-add: #1e2a20;
   --diff-del: #33211f;

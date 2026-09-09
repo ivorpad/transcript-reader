@@ -182,16 +182,17 @@ export class ReaderFleet extends LitElement {
       }
 
       .h1 {
-        font-size: 16px;
-        font-weight: 600;
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        font-weight: 500;
         margin-bottom: 6px;
       }
 
       .lede,
       .foot {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.55;
-        color: var(--ink-2);
+        color: var(--ink);
         max-width: 88ch;
       }
 
@@ -202,7 +203,7 @@ export class ReaderFleet extends LitElement {
       }
 
       .small {
-        font-size: 10px;
+        font-size: 11px;
       }
 
       .lanes {
@@ -230,7 +231,8 @@ export class ReaderFleet extends LitElement {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 5px 13px;
+        min-height: var(--row-data);
+        padding: 4px 13px;
         border-top: 1px solid var(--line-soft);
         cursor: pointer;
       }
@@ -242,7 +244,7 @@ export class ReaderFleet extends LitElement {
       .lane-type {
         flex: 0 0 168px;
         min-width: 0;
-        font-size: 11px;
+        font-size: 12px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -276,7 +278,7 @@ export class ReaderFleet extends LitElement {
 
       .lane-status {
         flex: 0 0 90px;
-        font-size: 10px;
+        font-size: 11px;
         text-align: right;
         color: var(--ink-3);
       }
@@ -293,8 +295,8 @@ export class ReaderFleet extends LitElement {
 
       .lane-num {
         flex: 0 0 52px;
-        font-size: 10px;
-        color: var(--ink-4);
+        font-size: 11px;
+        color: var(--ink-3);
         text-align: right;
       }
 
@@ -329,8 +331,9 @@ export class ReaderFleet extends LitElement {
       }
 
       .type {
-        font-size: 12px;
-        font-weight: 600;
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
         color: var(--violet);
       }
 
@@ -339,18 +342,21 @@ export class ReaderFleet extends LitElement {
       }
 
       .chip {
-        font-size: 10px;
+        display: inline-flex;
+        align-items: center;
+        height: var(--badge-height);
+        font-size: 11px;
         color: var(--ink-3);
         border: 1px solid var(--line);
-        border-radius: 3px;
-        padding: 1px 6px;
+        border-radius: var(--badge-radius);
+        padding: 0 6px;
         background: var(--paper-raised);
       }
 
       .desc {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.5;
-        color: var(--ink-2);
+        color: var(--ink);
         max-width: 76ch;
       }
 
@@ -360,7 +366,7 @@ export class ReaderFleet extends LitElement {
         flex-wrap: wrap;
         margin-top: 8px;
         min-width: 0;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
       }
     `

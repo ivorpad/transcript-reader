@@ -115,7 +115,7 @@ export class ReaderInspector extends LitElement {
       }
 
       .title {
-        font-size: 11px;
+        font-size: 12px;
         flex: 1 1 auto;
         min-width: 0;
         overflow: hidden;
@@ -124,13 +124,14 @@ export class ReaderInspector extends LitElement {
       }
 
       .btn.small {
-        padding: 2px 7px;
+        height: 28px;
+        padding: 0 10px;
       }
 
       .empty {
         padding: 14px;
-        font-size: 12px;
-        color: var(--ink-4);
+        font-size: var(--body-size);
+        color: var(--ink-3);
         line-height: 1.5;
       }
 
@@ -146,17 +147,17 @@ export class ReaderInspector extends LitElement {
       }
 
       .k {
-        flex: 0 0 110px;
-        font-size: 11px;
-        color: var(--ink-4);
+        flex: 0 0 120px;
+        font-size: 12px;
+        color: var(--ink-3);
       }
 
       .v {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 11px;
+        font-size: 12px;
         word-break: break-word;
-        color: var(--ink-2);
+        color: var(--ink);
       }
 
       .raw-label {

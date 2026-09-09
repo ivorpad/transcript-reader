@@ -121,7 +121,9 @@ export class ReaderRail extends LitElement {
       .turn {
         display: flex;
         gap: 8px;
-        padding: 6px 12px;
+        align-items: center;
+        min-height: var(--row-list);
+        padding: 4px 12px;
         cursor: pointer;
         border-left: 2px solid var(--edge);
       }
@@ -139,42 +141,40 @@ export class ReaderRail extends LitElement {
       }
 
       .n {
-        font-size: 10px;
-        color: var(--ink-4);
-        padding-top: 2px;
-        width: 16px;
+        font-size: 11px;
+        color: var(--ink-3);
+        width: 18px;
         flex: 0 0 auto;
       }
 
       .label {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 12px;
-        line-height: 1.35;
+        color: var(--ink);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
       .dur {
-        font-size: 10px;
-        color: var(--ink-4);
+        font-size: 11px;
+        color: var(--ink-3);
         flex: 0 0 auto;
-        padding-top: 2px;
       }
 
       .file,
       .state {
         display: flex;
         gap: 8px;
+        min-height: var(--row-data);
         padding: 4px 12px;
-        align-items: baseline;
+        align-items: center;
       }
 
       .path {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 11px;
+        font-size: 12px;
         overflow: hidden;
         text-overflow: ellipsis;
         direction: rtl;
@@ -183,23 +183,23 @@ export class ReaderRail extends LitElement {
       }
 
       .add {
-        font-size: 10px;
+        font-size: 11px;
         color: var(--green);
       }
 
       .del {
-        font-size: 10px;
+        font-size: 11px;
         color: var(--red);
       }
 
       .key {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
         flex: 0 0 auto;
       }
 
       .value {
-        font-size: 11px;
+        font-size: 12px;
         flex: 1 1 auto;
         min-width: 0;
         overflow: hidden;
@@ -209,8 +209,8 @@ export class ReaderRail extends LitElement {
       }
 
       .writes {
-        font-size: 10px;
-        color: var(--ink-5);
+        font-size: 11px;
+        color: var(--ink-3);
         width: 34px;
         text-align: right;
         flex: 0 0 auto;
@@ -218,9 +218,9 @@ export class ReaderRail extends LitElement {
 
       .note {
         padding: 8px 12px 18px;
-        font-size: 11px;
+        font-size: 12px;
         line-height: 1.4;
-        color: var(--ink-4);
+        color: var(--ink-3);
       }
     `
   ];

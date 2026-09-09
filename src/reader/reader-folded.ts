@@ -99,7 +99,7 @@ export class ReaderFolded extends LitElement {
     return html`
       <div class="detail-wrap">
         <div class="detail-head">
-          <span class="detail-name mono">${fold.key}</span>
+          <span class="detail-name mono title-text">${fold.key}</span>
           <span class="mono muted">${fold.count.toLocaleString()} in this session · class ${fold.lineClass} · ${fold.disposition === 'own-row' ? 'row of its own' : fold.disposition}</span>
         </div>
         <div class="rule">${foldNote(fold)}</div>
@@ -159,13 +159,14 @@ export class ReaderFolded extends LitElement {
       }
 
       .count {
-        font-size: 13px;
-        font-weight: 600;
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        font-weight: 500;
         margin-bottom: 4px;
       }
 
       .lede {
-        font-size: 12px;
+        font-size: 13px;
         line-height: 1.5;
         color: var(--ink-3);
       }
@@ -173,8 +174,9 @@ export class ReaderFolded extends LitElement {
       .type {
         display: flex;
         gap: 9px;
-        align-items: baseline;
-        padding: 6px 14px;
+        align-items: center;
+        min-height: var(--row-list);
+        padding: 4px 14px;
         border-bottom: 1px solid var(--line-soft);
         cursor: pointer;
         border-left: 2px solid transparent;
@@ -192,7 +194,7 @@ export class ReaderFolded extends LitElement {
       .name {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 11px;
+        font-size: 12px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -200,13 +202,13 @@ export class ReaderFolded extends LitElement {
       }
 
       .where {
-        font-size: 10px;
-        color: var(--ink-4);
+        font-size: 11px;
+        color: var(--ink-3);
         flex: 0 0 auto;
       }
 
       .n {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
         flex: 0 0 52px;
         text-align: right;
@@ -214,9 +216,9 @@ export class ReaderFolded extends LitElement {
 
       .note {
         padding: 10px 14px 24px;
-        font-size: 11px;
+        font-size: 12px;
         line-height: 1.45;
-        color: var(--ink-4);
+        color: var(--ink-3);
       }
 
       .detail {
@@ -240,14 +242,13 @@ export class ReaderFolded extends LitElement {
       }
 
       .detail-name {
-        font-size: 14px;
-        font-weight: 600;
+        color: var(--ink);
       }
 
       .rule {
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.55;
-        color: var(--ink-2);
+        color: var(--ink);
         max-width: 84ch;
       }
 
@@ -263,21 +264,20 @@ export class ReaderFolded extends LitElement {
       .tr {
         display: flex;
         gap: 10px;
-        padding: 6px 12px;
-        align-items: baseline;
+        min-height: var(--row-data);
+        padding: 4px 12px;
+        align-items: center;
       }
 
       .thead {
-        padding: 7px 12px;
         background: var(--paper-rail);
         border-bottom: 1px solid var(--line);
-        letter-spacing: 0.06em;
       }
 
       .tr {
         border-bottom: 1px solid var(--line-soft);
         cursor: pointer;
-        font-size: 11px;
+        font-size: 12px;
       }
 
       .tr:hover,
@@ -310,19 +310,19 @@ export class ReaderFolded extends LitElement {
       .c-size {
         flex: 0 0 58px;
         text-align: right;
-        color: var(--ink-4);
-        font-size: 10px;
+        color: var(--ink-3);
+        font-size: 11px;
       }
 
       .more {
         padding: 8px 12px;
-        font-size: 11px;
-        color: var(--ink-4);
+        font-size: 12px;
+        color: var(--ink-3);
       }
 
       .raw-label {
         margin: 14px 0 6px;
-        font-size: 11px;
+        font-size: 12px;
       }
 
       .raw {

@@ -626,7 +626,7 @@ export class TranscriptReader extends LitElement {
       <div class="head">
         <div class="head-title">
           <div class="title-line">
-            <span class="title">${record.conversation.title}</span>
+            <span class="title title-text">${record.conversation.title}</span>
             <span class="source mono">${this.#titleSource(record)}</span>
           </div>
           <div class="crumbs mono">
@@ -910,8 +910,8 @@ export class TranscriptReader extends LitElement {
         ${radio('bookkeeping', [['marked', 'marks shown'], ['hidden', 'marks hidden']])}
         ${radio('timeDisplay', [['elapsed', 'elapsed'], ['absolute', 'absolute']])}
         ${radio('theme', [['light', 'light'], ['dark', 'dark'], ['system', 'system']])}
-        <label class="check"><input type="checkbox" .checked=${settings.showThinking} @change=${(event: Event) => this.#setSettings({ showThinking: (event.target as HTMLInputElement).checked })} /> show thinking</label>
-        <label class="check"><input type="checkbox" .checked=${settings.markdown} @change=${(event: Event) => this.#setSettings({ markdown: (event.target as HTMLInputElement).checked })} /> render markdown</label>
+        <label class="switch"><input type="checkbox" .checked=${settings.showThinking} @change=${(event: Event) => this.#setSettings({ showThinking: (event.target as HTMLInputElement).checked })} /><span class="track"><span class="thumb"></span></span><span>show thinking</span></label>
+        <label class="switch"><input type="checkbox" .checked=${settings.markdown} @change=${(event: Event) => this.#setSettings({ markdown: (event.target as HTMLInputElement).checked })} /><span class="track"><span class="thumb"></span></span><span>render markdown</span></label>
       </div>
     `;
   }
@@ -970,15 +970,16 @@ export class TranscriptReader extends LitElement {
         align-items: center;
         gap: 12px;
         padding: 0 14px;
-        height: 44px;
+        height: 52px;
         flex: 0 0 auto;
         border-bottom: 1px solid var(--line);
         background: var(--paper-raised);
       }
 
       .brand {
-        font-weight: 600;
-        font-size: 13px;
+        font-weight: 500;
+        font-size: var(--label-size);
+        line-height: var(--label-line);
         flex: 0 0 auto;
       }
 
@@ -987,17 +988,20 @@ export class TranscriptReader extends LitElement {
         gap: 2px;
         padding: 2px;
         border: 1px solid var(--line);
-        border-radius: 6px;
+        border-radius: 12px;
         background: var(--paper);
         flex-wrap: wrap;
       }
 
       .tab {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        padding: 3px 9px;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
+        height: var(--button-height);
+        padding: 0 12px;
         border: 0;
-        border-radius: 4px;
+        border-radius: var(--button-radius);
         cursor: pointer;
         background: transparent;
         color: var(--ink-3);
@@ -1009,24 +1013,27 @@ export class TranscriptReader extends LitElement {
       }
 
       .picker {
-        font-size: 11px;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        height: var(--button-height);
         max-width: 320px;
         border: 1px solid var(--line);
-        border-radius: 5px;
+        border-radius: var(--button-radius);
         background: var(--paper);
-        color: var(--ink-2);
-        padding: 3px 6px;
+        color: var(--ink);
+        padding: 0 8px;
       }
 
       .chip {
         display: flex;
         align-items: center;
         gap: 7px;
-        font-size: 11px;
+        height: var(--button-height);
+        font-size: 12px;
         color: var(--ink-3);
         border: 1px solid var(--line);
-        border-radius: 5px;
-        padding: 4px 8px;
+        border-radius: var(--button-radius);
+        padding: 0 10px;
         background: var(--paper);
         flex: 0 1 auto;
         min-width: 0;
@@ -1084,24 +1091,25 @@ export class TranscriptReader extends LitElement {
       }
 
       .title {
-        font-size: 17px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
+        color: var(--ink);
       }
 
       .source {
-        font-size: 10px;
-        color: var(--ink-4);
+        display: inline-flex;
+        align-items: center;
+        height: var(--badge-height);
+        font-size: 11px;
+        color: var(--ink-3);
         border: 1px solid var(--line);
-        border-radius: 4px;
-        padding: 2px 5px;
+        border-radius: var(--badge-radius);
+        padding: 0 6px;
       }
 
       .crumbs {
         display: flex;
         flex-wrap: wrap;
         gap: 0 14px;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
       }
 
@@ -1119,17 +1127,19 @@ export class TranscriptReader extends LitElement {
       }
 
       .stat .eyebrow {
-        margin-bottom: 5px;
+        margin-bottom: 4px;
       }
 
       .stat-v {
-        font-size: 15px;
+        font-size: var(--title-size);
+        line-height: var(--title-line);
         font-weight: 500;
+        color: var(--ink);
       }
 
       .stat-sub {
-        font-size: 10px;
-        color: var(--ink-4);
+        font-size: 11px;
+        color: var(--ink-3);
         margin-top: 3px;
       }
 
@@ -1179,9 +1189,13 @@ export class TranscriptReader extends LitElement {
       }
 
       .chipbtn {
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 11px;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
+        height: var(--button-height);
+        padding: 0 12px;
+        border-radius: var(--button-radius);
         cursor: pointer;
         border: 1px solid var(--line);
         background: var(--paper-raised);
@@ -1199,7 +1213,7 @@ export class TranscriptReader extends LitElement {
       }
 
       .scope {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
       }
 
@@ -1221,9 +1235,9 @@ export class TranscriptReader extends LitElement {
         padding: 12px 14px;
         border-bottom: 1px solid var(--line);
         background: var(--paper-rail);
-        font-size: 12.5px;
+        font-size: var(--body-size);
         line-height: 1.5;
-        color: var(--ink-2);
+        color: var(--ink);
         max-width: 86ch;
       }
 
@@ -1241,7 +1255,8 @@ export class TranscriptReader extends LitElement {
         display: flex;
         gap: 10px;
         align-items: baseline;
-        padding: 9px 14px 9px 11px;
+        min-height: var(--row-list);
+        padding: 12px 14px 12px 11px;
         cursor: pointer;
         flex-wrap: wrap;
       }
@@ -1265,11 +1280,11 @@ export class TranscriptReader extends LitElement {
       }
 
       .band-tag {
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        width: 52px;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
+        width: 84px;
         flex: 0 0 auto;
         color: var(--edge);
       }
@@ -1281,20 +1296,24 @@ export class TranscriptReader extends LitElement {
       .band-label {
         flex: 1 1 220px;
         min-width: 0;
-        font-size: 13px;
+        font-size: var(--body-size);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
       .mark {
-        font-size: 10px;
-        padding: 1px 5px;
-        border-radius: 3px;
-        border: 1px solid var(--line);
-        background: var(--paper-raised);
+        display: inline-flex;
+        align-items: center;
+        height: var(--badge-height);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        padding: 0 6px;
+        border-radius: var(--badge-radius);
+        background: var(--badge-fill);
         flex: 0 0 auto;
-        color: var(--ink-3);
+        color: var(--badge-text);
       }
 
       .mark.trouble { color: var(--red); }
@@ -1319,6 +1338,8 @@ export class TranscriptReader extends LitElement {
       .band-child {
         display: flex;
         gap: 10px;
+        align-items: center;
+        min-height: var(--row-data);
         padding: 4px 0;
         border-top: 1px solid var(--line-soft);
         cursor: pointer;
@@ -1339,7 +1360,7 @@ export class TranscriptReader extends LitElement {
       .child-text {
         flex: 1 1 auto;
         min-width: 0;
-        font-size: 12px;
+        font-size: 13px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1403,11 +1424,11 @@ export class TranscriptReader extends LitElement {
         align-items: center;
         gap: 14px;
         padding: 0 14px;
-        height: 26px;
+        height: 32px;
         flex: 0 0 auto;
         border-top: 1px solid var(--line);
         background: var(--paper-rail);
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink-3);
         overflow: hidden;
         white-space: nowrap;
@@ -1441,16 +1462,17 @@ export class TranscriptReader extends LitElement {
       }
 
       .empty-title {
-        font-size: 16px;
-        font-weight: 600;
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        font-weight: 500;
         margin-bottom: 8px;
       }
 
       .empty p {
         margin: 0 0 14px;
-        font-size: 13px;
+        font-size: var(--body-size);
         line-height: 1.55;
-        color: var(--ink-2);
+        color: var(--ink);
       }
 
       .empty-actions {
@@ -1467,7 +1489,7 @@ export class TranscriptReader extends LitElement {
       /* Settings */
       .settings {
         position: absolute;
-        top: 48px;
+        top: 56px;
         right: 12px;
         z-index: 30;
         width: 280px;
@@ -1490,10 +1512,14 @@ export class TranscriptReader extends LitElement {
       }
 
       .opt {
-        font-size: 11px;
-        padding: 2px 8px;
+        font-family: var(--font-sans);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        font-weight: 500;
+        height: var(--button-height);
+        padding: 0 12px;
         border: 1px solid var(--line);
-        border-radius: 4px;
+        border-radius: var(--button-radius);
         background: var(--paper);
         cursor: pointer;
         color: var(--ink-3);
@@ -1505,12 +1531,8 @@ export class TranscriptReader extends LitElement {
         color: var(--paper);
       }
 
-      .check {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        font-size: 12px;
-        margin-top: 6px;
+      .switch {
+        margin-top: 10px;
       }
     `
   ];
